@@ -279,34 +279,35 @@
     {
       "name": "skill.ui_engineering.run",
       "description": "Run UI engineering skill for accessibility, responsiveness, and design-system guidance.",
+      "description": "Run UI engineering skill for accessibility, responsiveness, design-system guidance, and color tasks (uses color-expert).",
       "input_schema": { "type": "object", "properties": { "component": { "type": "string" } }, "required": [] },
       "response_schema": { "type": "object", "properties": { "recommendations": { "type": "string" } } },
       "handler": { "endpoint": "/api/commands/skill/ui_engineering/run", "method": "POST" }
     },
     {
       "name": "skill.ui_accessibility.run",
-      "description": "Run UI accessibility skill for WCAG checks and accessibility recommendations.",
+      "description": "Run UI accessibility skill for WCAG checks and accessibility recommendations (uses color-expert for color contrast and APCA checks).",
       "input_schema": { "type": "object", "properties": { "componentHtml": { "type": "string" } }, "required": [] },
       "response_schema": { "type": "object", "properties": { "issues": { "type": "string" } } },
       "handler": { "endpoint": "/api/commands/skill/ui_accessibility/run", "method": "POST" }
     },
     {
       "name": "skill.react_ui.run",
-      "description": "Run React UI skill for component patterns, hooks guidance, and examples.",
+      "description": "Run React UI skill for component patterns, hooks guidance, and examples (delegates color decisions to color-expert).",
       "input_schema": { "type": "object", "properties": { "componentName": { "type": "string" } }, "required": [] },
       "response_schema": { "type": "object", "properties": { "componentExample": { "type": "string" } } },
       "handler": { "endpoint": "/api/commands/skill/react_ui/run", "method": "POST" }
     },
     {
       "name": "skill.preact_ui.run",
-      "description": "Run Preact UI skill for Preact-specific guidance and component examples.",
+      "description": "Run Preact UI skill for Preact-specific guidance and component examples (delegates color decisions to color-expert).",
       "input_schema": { "type": "object", "properties": { "component": { "type": "string" } }, "required": [] },
       "response_schema": { "type": "object", "properties": { "example": { "type": "string" } } },
       "handler": { "endpoint": "/api/commands/skill/preact_ui/run", "method": "POST" }
     },
     {
       "name": "skill.vue_ui.run",
-      "description": "Run Vue UI skill for component structure, single-file components, and examples.",
+      "description": "Run Vue UI skill for component structure, single-file components, and examples (delegates color decisions to color-expert).",
       "input_schema": { "type": "object", "properties": { "component": { "type": "string" } }, "required": [] },
       "response_schema": { "type": "object", "properties": { "example": { "type": "string" } } },
       "handler": { "endpoint": "/api/commands/skill/vue_ui/run", "method": "POST" }
@@ -324,6 +325,42 @@
       "input_schema": { "type": "object", "properties": { "language": { "type": "string" } }, "required": [] },
       "response_schema": { "type": "object", "properties": { "starterTemplate": { "type": "string" } } },
       "handler": { "endpoint": "/api/commands/skill/polyglot_starter_index/run", "method": "POST" }
+    }
+    ,
+    {
+      "name": "skill.color_expert.run",
+      "description": "Run the color-expert skill for palette generation, conversions, naming, and accessibility checks.",
+      "input_schema": { "type": "object", "properties": { "task": { "type": "string" }, "colors": { "type": "array", "items": { "type": "string" } }, "options": { "type": "object" } }, "required": ["task"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "payload": { "type": "object" } } },
+      "handler": { "endpoint": "/api/commands/skill/color_expert/run", "method": "POST" }
+    },
+    {
+      "name": "skill.css_core.run",
+      "description": "Run the CSS core skill for architecture, tokens, responsive patterns, and accessibility (uses color-expert for color work).",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" }, "context": { "type": "object" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "artifacts": { "type": "array", "items": { "type": "string" } } } },
+      "handler": { "endpoint": "/api/commands/skill/css_core/run", "method": "POST" }
+    },
+    {
+      "name": "skill.css_debugging.run",
+      "description": "Run the CSS debugging skill to diagnose layout, stacking, and rendering issues (may call color-expert for color mismatches).",
+      "input_schema": { "type": "object", "properties": { "issue": { "type": "string" }, "html": { "type": "string" }, "css": { "type": "string" } }, "required": ["issue"] },
+      "response_schema": { "type": "object", "properties": { "diagnosis": { "type": "string" }, "fixes": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/css_debugging/run", "method": "POST" }
+    },
+    {
+      "name": "skill.css_formatting.run",
+      "description": "Run the CSS formatting skill to return formatting and stylelint rules, token conventions, and CI steps.",
+      "input_schema": { "type": "object", "properties": { "projectType": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "config": { "type": "string" }, "recommendations": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/css_formatting/run", "method": "POST" }
+    },
+    {
+      "name": "skill.css_testing.run",
+      "description": "Run the CSS testing skill for visual regression, E2E visual checks, and accessibility assertions (integrates color-expert for contrast checks).",
+      "input_schema": { "type": "object", "properties": { "testType": { "type": "string" }, "baseline": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "steps": { "type": "string" }, "commands": { "type": "array", "items": { "type": "string" } } } },
+      "handler": { "endpoint": "/api/commands/skill/css_testing/run", "method": "POST" }
     }
     ,
     {
