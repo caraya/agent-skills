@@ -1,0 +1,23 @@
+{
+  "name": "agent-skills",
+  "version": "1.0.0",
+  "description": "This repo contains curated agents and domain-specific skills for AI-assisted development and content workflows.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "validate:frontmatter": "node scripts/validate_frontmatter.bundle.js"
+  },
+  "keywords": [],
+  "author": "Carlos Araya (https://publishing-project.rivendellweb.net)",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "gray-matter": "^4.0.3",
+    "typescript": "^5.9.3",
+    "zod": "^4.3.6"
+  },
+  "dependencies": {
+    "tsx": "^4.21.0"
+  }
+}
