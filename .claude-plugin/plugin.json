@@ -1,0 +1,372 @@
+{
+  "name": "agent-skills",
+  "description": "Set of skills for AI coding agents.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Carlos Araya"
+  },
+  "homepage": "https://github.com/caraya/agent-skills",
+  "repository": "https://github.com/caraya/agent-skills",
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "instructional_designer.orchestrate",
+      "description": "Orchestrate a multi-skill curriculum plan by combining Instructional Designer SKILL outputs.",
+      "input_schema": { "type": "object", "properties": { "projectName": { "type": "string" }, "audience": { "type": "string" }, "durationWeeks": { "type": "integer" }, "goals": { "type": "array", "items": { "type": "string" } }, "detailLevel": { "type": "string", "enum": ["brief","full"] } }, "required": ["projectName","audience","durationWeeks"] },
+      "response_schema": { "type": "object", "properties": { "planMarkdown": { "type": "string" }, "milestones": { "type": "array", "items": { "type": "object" } }, "references": { "type": "array", "items": { "type": "object" } } } },
+      "examples": [{ "input": { "projectName": "Microservices Testing", "audience": "Backend engineers", "durationWeeks": 6, "goals": ["Improve CI reliability"], "detailLevel": "brief" }, "output": { "planMarkdown": "# 6-week plan..." } }],
+      "handler": { "endpoint": "/api/commands/instructional_designer/orchestrate", "method": "POST" }
+    },
+    {
+      "name": "instructional_analysis.run",
+      "description": "Produce a learner profile and concise needs statement (CSV output available).",
+      "input_schema": { "type": "object", "properties": { "context": { "type": "string" }, "stakeholders": { "type": "array", "items": { "type": "string" } }, "constraints": { "type": "array", "items": { "type": "string" } } }, "required": ["context"] },
+      "response_schema": { "type": "object", "properties": { "learnerProfile": { "type": "string" }, "needsStatement": { "type": "string" }, "csvLearnerProfile": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/instructional_analysis/run", "method": "POST" }
+    },
+    {
+      "name": "objectives.create",
+      "description": "Generate measurable learning objectives and an objective CSV (ABCD format).",
+      "input_schema": { "type": "object", "properties": { "scope": { "type": "string" }, "numObjectives": { "type": "integer", "minimum": 1 } }, "required": ["scope"] },
+      "response_schema": { "type": "object", "properties": { "objectives": { "type": "array", "items": { "type": "string" } }, "objectiveCsv": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/objectives/create", "method": "POST" }
+    },
+    {
+      "name": "assessment.generate_rubric",
+      "description": "Produce a rubric (Markdown) and scoring rules for a project or assessment.",
+      "input_schema": { "type": "object", "properties": { "projectType": { "type": "string" }, "criteria": { "type": "array", "items": { "type": "string" } } }, "required": ["projectType"] },
+      "response_schema": { "type": "object", "properties": { "rubricMarkdown": { "type": "string" }, "scoringRules": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/assessment/generate_rubric", "method": "POST" }
+    },
+    {
+      "name": "lesson.create_plan",
+      "description": "Create a lesson plan CSV (demo minutes, practice minutes, reflection) for a topic.",
+      "input_schema": { "type": "object", "properties": { "topic": { "type": "string" }, "durationMinutes": { "type": "integer" } }, "required": ["topic","durationMinutes"] },
+      "response_schema": { "type": "object", "properties": { "lessonCsv": { "type": "string" }, "activityChecklist": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/lesson/create_plan", "method": "POST" }
+    },
+    {
+      "name": "debugging.generate_lab",
+      "description": "Seed a debugging lab and provide a debugging rubric and CSV header.",
+      "input_schema": { "type": "object", "properties": { "difficulty": { "type": "string", "enum": ["easy","medium","hard"] }, "seedBugType": { "type": "string" } }, "required": ["difficulty"] },
+      "response_schema": { "type": "object", "properties": { "labCsvHeader": { "type": "string" }, "rubricMarkdown": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/debugging/generate_lab", "method": "POST" }
+    },
+    {
+      "name": "evaluation.create_friction_log",
+      "description": "Return a friction-log CSV template and pilot data capture header for pilot evaluation.",
+      "input_schema": { "type": "object", "properties": { "productStage": { "type": "string", "enum": ["alpha","beta","release"] } }, "required": ["productStage"] },
+      "response_schema": { "type": "object", "properties": { "frictionLogCsv": { "type": "string" }, "pilotCsvHeader": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/evaluation/create_friction_log", "method": "POST" }
+    },
+    {
+      "name": "devrel.map_content",
+      "description": "Map artifacts to developer journey stages and output a content map CSV.",
+      "input_schema": { "type": "object", "properties": { "artifacts": { "type": "array", "items": { "type": "string" } } }, "required": ["artifacts"] },
+      "response_schema": { "type": "object", "properties": { "contentMapCsv": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/devrel/map_content", "method": "POST" }
+    },
+    {
+      "name": "skill.render_template",
+      "description": "Return a specific SKILL's template chunk (CSV, Markdown, or JSON) for automation.",
+      "input_schema": { "type": "object", "properties": { "skillName": { "type": "string" }, "templateType": { "type": "string" } }, "required": ["skillName","templateType"] },
+      "response_schema": { "type": "object", "properties": { "template": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/render_template", "method": "POST" }
+    },
+    {
+      "name": "skill.javascript_core.run",
+      "description": "Run the JavaScript core skill to provide guidance or templates for JavaScript engineering topics.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/javascript_core/run", "method": "POST" }
+    },
+    {
+      "name": "skill.javascript_testing.run",
+      "description": "Run the JavaScript testing skill to produce test templates, triage CSVs, and fixes.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/javascript_testing/run", "method": "POST" }
+    },
+    {
+      "name": "skill.javascript_debugging.run",
+      "description": "Run the JavaScript debugging skill for debugging pedagogy and exercises.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/javascript_debugging/run", "method": "POST" }
+    },
+    {
+      "name": "skill.javascript_formatting.run",
+      "description": "Run JavaScript formatting guidance (styles, linting, config snippets).",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/javascript_formatting/run", "method": "POST" }
+    },
+    {
+      "name": "skill.javascript_performance.run",
+      "description": "Run JavaScript performance skill for profiling and optimization guidance.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/javascript_performance/run", "method": "POST" }
+    },
+    {
+      "name": "skill.typescript_core.run",
+      "description": "Run the TypeScript core skill for design patterns, typing, and migration guidance.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/typescript_core/run", "method": "POST" }
+    },
+    {
+      "name": "skill.typescript_testing.run",
+      "description": "Run the TypeScript testing skill for test harness and patterns.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/typescript_testing/run", "method": "POST" }
+    },
+    {
+      "name": "skill.typescript_debugging.run",
+      "description": "Run the TypeScript debugging skill for language-specific debugging tips.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/typescript_debugging/run", "method": "POST" }
+    },
+    {
+      "name": "skill.typescript_formatting.run",
+      "description": "Run TypeScript formatting skill for config and formatting examples.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/typescript_formatting/run", "method": "POST" }
+    },
+    {
+      "name": "skill.typescript_performance.run",
+      "description": "Run TypeScript performance guidance.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/typescript_performance/run", "method": "POST" }
+    },
+    {
+      "name": "skill.python_core.run",
+      "description": "Run Python core skill for idioms, packaging, and best practices.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/python_core/run", "method": "POST" }
+    },
+    {
+      "name": "skill.python_testing.run",
+      "description": "Run Python testing skill (pytest patterns, fixtures, coverage).",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/python_testing/run", "method": "POST" }
+    },
+    {
+      "name": "skill.python_debugging.run",
+      "description": "Run Python debugging skill for debugging pedagogy and pytest-specific tips.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/python_debugging/run", "method": "POST" }
+    },
+    {
+      "name": "skill.python_formatting.run",
+      "description": "Run Python formatting skill (black, isort configs and examples).",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/python_formatting/run", "method": "POST" }
+    },
+    {
+      "name": "skill.python_performance.run",
+      "description": "Run Python performance guidance (profiling, hotspots, optimization).",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/python_performance/run", "method": "POST" }
+    },
+    {
+      "name": "skill.go_core.run",
+      "description": "Run the Go core skill for idioms, module structure, and best practices.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/go_core/run", "method": "POST" }
+    },
+    {
+      "name": "skill.go_debugging.run",
+      "description": "Run the Go debugging skill for debugging patterns, runtime diagnostics, and common pitfalls.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/go_debugging/run", "method": "POST" }
+    },
+    {
+      "name": "skill.go_formatting.run",
+      "description": "Run Go formatting and tooling guidance (gofmt, goimports, vet, linters).",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/go_formatting/run", "method": "POST" }
+    },
+    {
+      "name": "skill.go_performance.run",
+      "description": "Run Go performance skill for profiling, concurrency patterns, and optimization guidance.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/go_performance/run", "method": "POST" }
+    },
+    {
+      "name": "skill.rust_core.run",
+      "description": "Run Rust core skill for ownership, concurrency, and idiomatic patterns.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/rust_core/run", "method": "POST" }
+    },
+    {
+      "name": "skill.rust_debugging.run",
+      "description": "Run Rust debugging skill for borrow-checker issues, panic analysis, and debugger usage.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/rust_debugging/run", "method": "POST" }
+    },
+    {
+      "name": "skill.rust_formatting.run",
+      "description": "Run Rust formatting skill (rustfmt, Clippy guidance and examples).",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/rust_formatting/run", "method": "POST" }
+    },
+    {
+      "name": "skill.rust_performance.run",
+      "description": "Run Rust performance guidance (profiling, allocations, zero-cost abstractions).",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" }, "format": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/rust_performance/run", "method": "POST" }
+    },
+    {
+      "name": "skill.code_example_validation.run",
+      "description": "Run code example validation skill to check code samples for correctness and pedagogy.",
+      "input_schema": { "type": "object", "properties": { "code": { "type": "string" }, "language": { "type": "string" } }, "required": ["code"] },
+      "response_schema": { "type": "object", "properties": { "analysis": { "type": "string" }, "fixes": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/code_example_validation/run", "method": "POST" }
+    },
+    {
+      "name": "skill.style_lookup.run",
+      "description": "Run style lookup skill for documentation and style guidelines references.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/style_lookup/run", "method": "POST" }
+    },
+    {
+      "name": "skill.lesson_activity_design.run",
+      "description": "Run lesson & activity design skill to output lesson CSVs and worked-example patterns.",
+      "input_schema": { "type": "object", "properties": { "topic": { "type": "string" }, "durationMinutes": { "type": "integer" } }, "required": ["topic"] },
+      "response_schema": { "type": "object", "properties": { "lessonCsv": { "type": "string" }, "pattern": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/lesson_activity_design/run", "method": "POST" }
+    },
+    {
+      "name": "skill.debugging_pedagogy.run",
+      "description": "Run debugging pedagogy skill to generate labs, rubrics, and scaffolding for debugging instruction.",
+      "input_schema": { "type": "object", "properties": { "difficulty": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "labCsv": { "type": "string" }, "rubricMarkdown": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/debugging_pedagogy/run", "method": "POST" }
+    },
+    {
+      "name": "skill.debugging_methodology.run",
+      "description": "Run debugging methodology skill for high-level debugging workflows and protocols.",
+      "input_schema": { "type": "object", "properties": { "context": { "type": "string" } }, "required": ["context"] },
+      "response_schema": { "type": "object", "properties": { "protocol": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/debugging_methodology/run", "method": "POST" }
+    },
+    {
+      "name": "skill.developer_learning_science.run",
+      "description": "Run developer learning science skill for cognitive strategies, beacons, and transfer tactics.",
+      "input_schema": { "type": "object", "properties": { "topic": { "type": "string" } }, "required": ["topic"] },
+      "response_schema": { "type": "object", "properties": { "guidance": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/developer_learning_science/run", "method": "POST" }
+    },
+    {
+      "name": "skill.ui_engineering.run",
+      "description": "Run UI engineering skill for accessibility, responsiveness, and design-system guidance.",
+      "input_schema": { "type": "object", "properties": { "component": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "recommendations": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/ui_engineering/run", "method": "POST" }
+    },
+    {
+      "name": "skill.ui_accessibility.run",
+      "description": "Run UI accessibility skill for WCAG checks and accessibility recommendations.",
+      "input_schema": { "type": "object", "properties": { "componentHtml": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "issues": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/ui_accessibility/run", "method": "POST" }
+    },
+    {
+      "name": "skill.react_ui.run",
+      "description": "Run React UI skill for component patterns, hooks guidance, and examples.",
+      "input_schema": { "type": "object", "properties": { "componentName": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "componentExample": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/react_ui/run", "method": "POST" }
+    },
+    {
+      "name": "skill.preact_ui.run",
+      "description": "Run Preact UI skill for Preact-specific guidance and component examples.",
+      "input_schema": { "type": "object", "properties": { "component": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "example": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/preact_ui/run", "method": "POST" }
+    },
+    {
+      "name": "skill.vue_ui.run",
+      "description": "Run Vue UI skill for component structure, single-file components, and examples.",
+      "input_schema": { "type": "object", "properties": { "component": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "example": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/vue_ui/run", "method": "POST" }
+    },
+    {
+      "name": "skill.style_lookup.run",
+      "description": "Run style lookup skill to return style guidance or reference links.",
+      "input_schema": { "type": "object", "properties": { "query": { "type": "string" } }, "required": ["query"] },
+      "response_schema": { "type": "object", "properties": { "result": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/style_lookup/run", "method": "POST" }
+    },
+    {
+      "name": "skill.polyglot_starter_index.run",
+      "description": "Run polyglot starter index to provide starter templates and tool defaults across languages.",
+      "input_schema": { "type": "object", "properties": { "language": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "starterTemplate": { "type": "string" } } },
+      "handler": { "endpoint": "/api/commands/skill/polyglot_starter_index/run", "method": "POST" }
+    }
+    ,
+    {
+      "name": "agent.content_summarizer.orchestrate",
+      "description": "Run the Content Summarizer agent to fetch and summarize URLs or documents.",
+      "input_schema": { "type": "object", "properties": { "url": { "type": "string" }, "summaryLength": { "type": "string", "enum": ["short","medium","long"] } }, "required": ["url"] },
+      "response_schema": { "type": "object", "properties": { "summary": { "type": "string" }, "structured": { "type": "object" } } },
+      "handler": { "endpoint": "/api/agents/content_summarizer/orchestrate", "method": "POST" }
+    },
+    {
+      "name": "agent.polyglot_engineering.orchestrate",
+      "description": "Run the Polyglot Engineering agent to scaffold or modify projects across languages.",
+      "input_schema": { "type": "object", "properties": { "language": { "type": "string" }, "projectType": { "type": "string" } }, "required": ["language"] },
+      "response_schema": { "type": "object", "properties": { "changes": { "type": "string" }, "files": { "type": "array", "items": { "type": "string" } } } },
+      "handler": { "endpoint": "/api/agents/polyglot_engineering/orchestrate", "method": "POST" }
+    },
+    {
+      "name": "agent.polyglot_performance.orchestrate",
+      "description": "Run the Polyglot Performance agent to analyze performance and suggest optimizations.",
+      "input_schema": { "type": "object", "properties": { "language": { "type": "string" }, "target": { "type": "string" } }, "required": [] },
+      "response_schema": { "type": "object", "properties": { "analysis": { "type": "string" }, "recommendations": { "type": "array", "items": { "type": "string" } } } },
+      "handler": { "endpoint": "/api/agents/polyglot_performance/orchestrate", "method": "POST" }
+    },
+    {
+      "name": "agent.instructional_designer.orchestrate",
+      "description": "Run the Instructional Designer agent to orchestrate learning design workflows across SKILLs.",
+      "input_schema": { "type": "object", "properties": { "projectName": { "type": "string" }, "audience": { "type": "string" } }, "required": ["projectName"] },
+      "response_schema": { "type": "object", "properties": { "plan": { "type": "string" }, "artifacts": { "type": "array", "items": { "type": "string" } } } },
+      "handler": { "endpoint": "/api/agents/instructional_designer/orchestrate", "method": "POST" }
+    },
+    {
+      "name": "agent.content_editor.orchestrate",
+      "description": "Run the Content Editor agent for editorial review across correctness, style, and code examples.",
+      "input_schema": { "type": "object", "properties": { "documentPath": { "type": "string" }, "focus": { "type": "string" } }, "required": ["documentPath"] },
+      "response_schema": { "type": "object", "properties": { "edits": { "type": "string" }, "notes": { "type": "string" } } },
+      "handler": { "endpoint": "/api/agents/content_editor/orchestrate", "method": "POST" }
+    },
+    {
+      "name": "agent.content_ideation.orchestrate",
+      "description": "Run the Content Ideation agent to generate first-draft Markdown from prompts or URLs.",
+      "input_schema": { "type": "object", "properties": { "seedText": { "type": "string" }, "audience": { "type": "string" } }, "required": ["seedText"] },
+      "response_schema": { "type": "object", "properties": { "draft": { "type": "string" }, "frontmatter": { "type": "object" } } },
+      "handler": { "endpoint": "/api/agents/content_ideation/orchestrate", "method": "POST" }
+    }
+  ]
+}
