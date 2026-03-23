@@ -51,3 +51,9 @@ For each finding provide:
 - Ownership, safety, or API risk
 - Why it matters
 - Minimal fix with code example
+
+## Scope
+
+This repository also contains a short `rust` umbrella skill (deprecated placeholder). Consolidated guidance should live in `rust-core`, `rust-debugging`, `rust-formatting`, and `rust-performance`.
+
+Use this `rust-core` SKILL as the authoritative source for core Rust guidance; the `rust` placeholder has been removed.
