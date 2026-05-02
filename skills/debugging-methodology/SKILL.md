@@ -5,6 +5,10 @@ description: "General debugging skill for investigative workflow, error interpre
 
 # Debugging Methodology
 
+Scope: Use this skill to diagnose and resolve active software issues, not to design instruction.
+
+If you need to teach debugging, use pedagogy: `skills/debugging-pedagogy/SKILL.md`.
+
 ## Use When
 
 - Investigating unexpected behavior or crashes.

@@ -270,13 +270,6 @@
       "handler": { "endpoint": "/api/commands/skill/debugging_methodology/run", "method": "POST" }
     },
     {
-      "name": "skill.developer_learning_science.run",
-      "description": "Run developer learning science skill for cognitive strategies, beacons, and transfer tactics.",
-      "input_schema": { "type": "object", "properties": { "topic": { "type": "string" } }, "required": ["topic"] },
-      "response_schema": { "type": "object", "properties": { "guidance": { "type": "string" } } },
-      "handler": { "endpoint": "/api/commands/skill/developer_learning_science/run", "method": "POST" }
-    },
-    {
       "name": "skill.ui_engineering.run",
       "description": "Run UI engineering skill for accessibility, responsiveness, and design-system guidance.",
       "description": "Run UI engineering skill for accessibility, responsiveness, design-system guidance, and color tasks (uses color-expert).",

@@ -5,6 +5,10 @@ description: "Explicit debugging instruction for developers: five-stage framewor
 
 # Debugging Pedagogy
 
+Scope: Use this skill to design and assess debugging instruction, not to troubleshoot live incidents.
+
+If you need to diagnose a live issue, use methodology: `skills/debugging-methodology/SKILL.md`.
+
 Core model (five stages): Test/Evaluate → Identify Bug → Represent Program → Locate Bug → Correct Bug.
 
 Instructional elements:
