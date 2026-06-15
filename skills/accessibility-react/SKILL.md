@@ -26,6 +26,10 @@ This skill provides React-specific best practices for building accessible UIs. I
 - Refactoring for accessibility in React codebases.
 - Ensuring React UIs meet WCAG 2.2 AA.
 
+## Shared Reference
+
+When generating or scaffolding components, use `references/accessible-component-generation.md` as the source of truth for semantics, accessible names, keyboard behavior, focus handling, and non-happy-path states. Apply the React addendum in that reference for framework-specific patterns.
+
 ## Guidelines
 
 ### Keyboard Navigation
@@ -67,116 +71,9 @@ This skill provides React-specific best practices for building accessible UIs. I
 - [ ] Touch targets ≥ 44x44px
 - [ ] Empty states are meaningful
 
-## React Patterns & Examples
+## Component Generation Guidance
 
-### Accessible Button
-```jsx
-<button onClick={handleDelete}>Delete Task</button>
-```
-
-### Accessible Link
-```jsx
-<a href="/tasks/123">View Task</a>
-```
-
-### Icon Button with ARIA
-```jsx
-<button aria-label="Close" onClick={onClose}>
-  <CloseIcon />
-</button>
-```
-
-### Focus Management with Ref
-```jsx
-import { useEffect, useRef } from "react";
-function Modal({ open }) {
-  const ref = useRef();
-  useEffect(() => {
-    if (open) ref.current?.focus();
-  }, [open]);
-  return (
-    <div tabIndex={-1} ref={ref} role="dialog" aria-modal="true">
-      Modal content
-    </div>
-  );
-}
-```
-
-### Live Region for Updates
-```jsx
-<div aria-live="polite">{statusMessage}</div>
-```
-
-### Conditional Empty State
-```jsx
-{items.length === 0 ? <p>No results found.</p> : <ItemList items={items} />}
-```
-
-## Common Anti-Patterns (Avoid These)
-
-### 1) Clickable `div` Instead of `button`
-Do not use non-semantic elements for button behavior.
-
-```jsx
-// Don't
-<div onClick={handleSave}>Save</div>
-
-// Do
-<button type="button" onClick={handleSave}>Save</button>
-```
-
-Why: `button` is keyboard-accessible by default and announces the correct role to assistive tech.
-
-### 2) Fake Link with `onClick`
-Do not create links with click handlers when navigation is the intent.
-
-```jsx
-// Don't
-<span onClick={() => navigate("/settings")}>Settings</span>
-
-// Do
-<a href="/settings">Settings</a>
-```
-
-Why: Real links support expected keyboard and screen reader behaviors, including open-in-new-tab and link semantics.
-
-### 3) Icon-Only Button Without Accessible Name
-Do not rely on visual icons alone.
-
-```jsx
-// Don't
-<button onClick={onClose}><CloseIcon /></button>
-
-// Do
-<button aria-label="Close dialog" onClick={onClose}><CloseIcon /></button>
-```
-
-Why: Screen readers need an accessible name to announce the button purpose.
-
-### 4) Custom Interactive Element Without Keyboard Support
-Do not attach only mouse handlers to custom elements.
-
-```jsx
-// Don't
-<div onClick={toggleOpen}>Expand details</div>
-
-// Better (if custom element is required)
-<div
-  role="button"
-  tabIndex={0}
-  onClick={toggleOpen}
-  onKeyDown={(e) => {
-    if (e.key === "Enter" || e.key === " ") toggleOpen();
-  }}
->
-  Expand details
-</div>
-
-// Preferred
-<button type="button" onClick={toggleOpen}>Expand details</button>
-```
-
-Why: Keyboard users must be able to discover, focus, and activate all interactive controls.
+For component scaffolding rules and anti-patterns, follow `references/accessible-component-generation.md`, including its React addendum.
 
 
 

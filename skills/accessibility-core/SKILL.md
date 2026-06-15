@@ -27,6 +27,10 @@ This skill is designed to enhance the accessibility of your application by imple
 - When improving the accessibility of an existing application.
 - When ensuring compliance with WCAG 2.2 AA standards.
 
+## Shared Reference
+
+When generating or scaffolding components, use `references/accessible-component-generation.md` as the source of truth for semantics, accessible names, keyboard behavior, focus handling, and non-happy-path states.
+
 ## Guidelines
 
 ### Keyboard Navigation
@@ -68,73 +72,9 @@ This skill is designed to enhance the accessibility of your application by imple
 - [ ] Touch targets ≥ 44x44px on mobile
 - [ ] Meaningful empty states (not blank screens)
 
-## Common HTML Patterns
+## Component Generation Guidance
 
-### Buttons vs. Links
-
-```html
-<!-- Use <button> for actions -->
-<button onClick={handleDelete}>Delete Task</button>
-
-<!-- Use <a> for navigation -->
-<a href="/tasks/123">View Task</a>
-
-<!-- NEVER use div/span as buttons -->
-<div onClick={handleDelete}>Delete</div>  <!-- BAD -->
-```
-
-### Form Labels
-
-```html
-<!-- Explicit label association -->
-<label htmlFor="email">Email address</label>
-<input id="email" type="email" required />
-
-<!-- Implicit wrapping -->
-<label>
-  Email address
-  <input type="email" required />
-</label>
-
-<!-- Hidden label (visible label preferred) -->
-<input type="search" aria-label="Search tasks" />
-```
-
-### ARIA Roles
-
-```html
-<!-- Navigation -->
-<nav aria-label="Main navigation">...</nav>
-<nav aria-label="Footer links">...</nav>
-
-<!-- Status messages -->
-<div role="status" aria-live="polite">Task saved</div>
-
-<!-- Alert messages -->
-<div role="alert">Error: Title is required</div>
-
-<!-- Modal dialogs -->
-<dialog aria-modal="true" aria-labelledby="dialog-title">
-  <h2 id="dialog-title">Confirm Delete</h2>
-  ...
-</dialog>
-
-<!-- Loading states -->
-<div aria-busy="true" aria-label="Loading tasks">
-  <Spinner />
-</div>
-```
-
-### Accessible Lists
-
-```html
-<ul role="list" aria-label="Tasks">
-  <li>
-    <input type="checkbox" id="task-1" aria-label="Complete: Buy groceries" />
-    <label htmlFor="task-1">Buy groceries</label>
-  </li>
-</ul>
-```
+For component scaffolding rules and anti-patterns, follow `references/accessible-component-generation.md`.
 
 ## Testing Tools
 
@@ -161,125 +101,6 @@ npx pa11y             # CLI accessibility checker
 | `aria-live="assertive"` | Announced immediately | Errors, time-sensitive alerts |
 | `role="status"` | Same as `polite` | Status messages |
 | `role="alert"` | Same as `assertive` | Error messages |
-
-## Common Anti-Patterns (Avoid These)
-
-### 1) Clickable `div` Instead of `button`
-Do not use non-semantic elements for button behavior.
-
-```html
-<!-- Don't -->
-<div onclick="handleSave()">Save</div>
-
-<!-- Do -->
-<button type="button" onclick="handleSave()">Save</button>
-```
-
-Why: `button` is keyboard-accessible by default and announces the correct role to assistive tech.
-
-### 2) Missing Alt Text on Images
-Do not omit or use placeholder alt text.
-
-```html
-<!-- Don't -->
-<img src="chart.png" />
-
-<!-- Do -->
-<img src="chart.png" alt="Monthly revenue trend: $15K to $22K" />
-
-<!-- Decorative image -->
-<img src="divider.png" alt="" aria-hidden="true" />
-```
-
-Why: Screen reader users cannot see images; alt text conveys essential content and context.
-
-### 3) Color-Only State Indicators
-Do not rely on color alone to communicate status.
-
-```html
-<!-- Don't -->
-<div style="background: red">Error</div>
-
-<!-- Do -->
-<div style="background: #fee; border-left: 4px solid #c00;">
-  <strong>Error:</strong> Email is required
-</div>
-```
-
-Why: Color-blind users and those using black-and-white displays cannot distinguish meaning.
-
-### 4) Icon-Only Buttons Without Labels
-Do not rely on visual icons alone.
-
-```html
-<!-- Don't -->
-<button><svg><!-- close icon --></svg></button>
-
-<!-- Do -->
-<button aria-label="Close dialog"><svg><!-- close icon --></svg></button>
-```
-
-Why: Screen readers need an accessible name to announce the button purpose.
-
-### 5) Custom Interactive Element Without Keyboard Support
-Do not attach only mouse handlers to custom elements.
-
-```html
-<!-- Don't -->
-<div onclick="toggleOpen()">Expand details</div>
-
-<!-- Do (if custom is required) -->
-<div
-  role="button"
-  tabindex="0"
-  onclick="toggleOpen()"
-  onkeydown="if (event.key === 'Enter' || event.key === ' ') toggleOpen()"
->
-  Expand details
-</div>
-
-<!-- Preferred -->
-<button type="button" onclick="toggleOpen()">Expand details</button>
-```
-
-Why: Keyboard users must be able to discover, focus, and activate all interactive controls.
-
-### 6) Using `tabindex > 0`
-Do not manually override tab order.
-
-```html
-<!-- Don't -->
-<button tabindex="5">Save</button>
-<input tabindex="1" />
-<a href="/" tabindex="10">Home</a>
-
-<!-- Do -->
-<input /> <!-- Natural tab order -->
-<button>Save</button>
-<a href="/">Home</a>
-
-<!-- Use tabindex="0" or "-1" only -->
-<div tabindex="0" role="button">Custom button</div>
-```
-
-Why: Manual tab ordering breaks for keyboard users and violates WCAG best practice.
-
-### 7) Removing Focus Outlines
-Do not hide focus indicators.
-
-```css
-/* Don't */
-*:focus {
-  outline: none;
-}
-
-/* Do */
-*:focus-visible {
-  outline: 2px solid #0066cc;
-}
-```
-
-Why: Keyboard users rely on visible focus to navigate. If removed, the page becomes unusable.
 
 ## References
 - [Web Content Accessibility Guidelines (WCAG) 2.2](https://www.w3.org/TR/WCAG22/)

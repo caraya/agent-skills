@@ -66,6 +66,7 @@ Skills are organized under `skills/` by domain. Below is a concise listing with 
 ## References
 
 - Accessibility checklist: `references/accessibility-checklist.md`
+- Accessible component generation: `references/accessible-component-generation.md`
 
 ## How to use this repo
 
