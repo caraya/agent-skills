@@ -1,0 +1,31 @@
+.slide {
+  box-sizing: border-box;
+  padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+.slide h1,
+.slide h2,
+.slide h3,
+.slide p,
+.slide ul,
+.slide ol,
+.slide pre,
+.slide-grid {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+.slide p,
+.slide ul,
+.slide ol,
+.slide pre {
+  max-width: 70ch;
+}
+
+.slide details.notes > summary {
+  font-size: var(--slide-base-font-size);
+}
+
+.slide details.notes > div {
+  font-size: var(--slide-base-font-size);
+}
