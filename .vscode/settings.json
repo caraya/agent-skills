@@ -1,0 +1,20 @@
+{
+  "chat.agentFilesLocations": [
+    "agents/content-editor",
+    "agents/content-ideation",
+    "agents/content-summarizer",
+    "agents/instructional-designer-dev-content",
+    "agents/polyglot-engineering",
+    "agents/polyglot-performance",
+    "agents/presentation-builder"
+  ],
+  "chat.agentSkillsLocations": {
+    "skills": true
+  },
+  "chat.tools.terminal.autoApprove": {
+    "/^git status --short && printf '\\\\nTop-level entries:\\\\n' && find \\. -maxdepth 2 -type f -print \\| sort \\| sed -n '1,180p'$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}

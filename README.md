@@ -1,126 +1,49 @@
-# Agent Skills Repository — Quick Reference
+# Agent Skills Repository
 
-This repo contains curated agents and domain-specific skills for AI-assisted development and content workflows.
+Reusable agents and [Agent Skills](https://agentskills.io/) for AI-assisted
+development, content work, instructional design, and interface design.
 
-## Agents
+## Repository layout
 
-- `agents/content-editor.md` — Senior editorial review across five dimensions: correctness, architecture, readability, code examples, and style. Use before publication for thorough content QA.
-- `agents/content-ideation.md` — Generates first-draft Markdown from text or a URL with YAML frontmatter; creator-first drafting for fast iteration.
-- `agents/content-summarizer.md` — Fetches a URL, extracts the main article, and returns variable-length summaries (short/medium/long or custom word counts); returns metadata and key points.
-- `agents/polyglot-engineering.md` — Creator-first engineering agent that scaffolds projects and implements features for TypeScript, JavaScript, Python, Go, and Rust. Enforces formatting and optional accessibility gating.
-- `agents/polyglot-performance.md` — Profiling and performance recommendations across TypeScript, JavaScript, Python, Go, and Rust.
+| Path | Purpose |
+| --- | --- |
+| `agents/<name>/agent.md` | Agent prompt and YAML metadata |
+| `skills/<name>/SKILL.md` | Portable Agent Skill instructions |
+| `references/` | Shared reference documents |
+| `.claude-plugin/plugin.json` | Claude Code plugin manifest |
+| `.vscode/settings.json` | VS Code discovery paths for the canonical agents and skills |
 
-## Skills
+Agent prompts are grouped into per-agent directories. Skills follow the Agent
+Skills convention: one directory per skill, containing `SKILL.md` with matching
+`name` and directory name, plus a description of when to use it.
 
-Skills are organized under `skills/` by domain. Below is a concise listing with purpose notes.
+## Use with Claude Code
 
-### Content (`skills/content/`)
-- `style-lookup.md` — Arbitration of editorial style decisions (Google developer docs first, Chicago fallback).
-- `code-example-validation.md` — Validate documentation code examples for correctness, runnable completeness, and safety.
+The plugin manifest explicitly registers the skills directory and agent prompts.
+From this repository, load the plugin locally with:
 
-### Frontend (`skills/frontend/`)
-- `ui-engineering.md` — Framework-agnostic UI engineering guidance: accessibility, responsive design, design-system adherence.
-- `react-ui.md` — React-specific component architecture, state patterns, separation of concerns, and production-quality UI practices.
-- `preact-ui.md` — Preact-focused UI patterns and ports of React guidance.
-- `vue-ui.md` — Vue-specific UI patterns and component guidance.
-- `ui-accessibility.md` — WCAG 2.1 AA enforcement, automated + manual testing guidance, and CI/devtool templates for accessibility checks.
-
-### TypeScript (`skills/typescript/`)
-- `typescript-core.md` — Type safety, tsconfig posture, and public API typing guidance.
-- `typescript-debugging.md` — Sourcemap and runtime debugging for TypeScript.
-- `typescript-formatting.md` — Prettier/ESLint configuration and formatting rules.
-- `typescript-testing.md` — Type-aware testing strategies and framework recommendations.
-- `typescript-performance.md` — Profiling, build/time, and bundle-size optimizations.
-
-### JavaScript (`skills/javascript/`)
-- `javascript-core.md` — Runtime correctness, async flow, and module compatibility.
-- `javascript-debugging.md` — Node/browser runtime debugging patterns and tooling.
-- `javascript-formatting.md` — Prettier/ESLint and formatting best practices.
-- `javascript-testing.md` — Test infra and async/flaky test handling (Jest/Vitest guidance).
-- `javascript-performance.md` — Event-loop and memory profiling, runtime optimizations.
-
-### Python (`skills/python/`)
-- `python-core.md` — Packaging hygiene, typing, and runtime correctness.
-- `python-debugging.md` — pdb/debugpy, async debugging, and traceback analysis.
-- `python-formatting.md` — Black/isort and formatting integration.
-- `python-testing.md` — pytest best practices and test structure.
-- `python-performance.md` — GIL analysis, profiling, and optimization strategies.
-
-### Go (`skills/go/`)
-- `go-core.md` — API design, concurrency safety, and idiomatic error handling.
-- `go-debugging.md` — Delve, race detection, and goroutine analysis.
-- `go-formatting.md` — gofmt/goimports and linting configuration.
-- `go-testing.md` — Table-driven tests, mocking, and goroutine-leak checks.
-- `go-performance.md` — Benchmarking and pprof-based performance tuning.
-
-### Rust (`skills/rust/`)
-- `rust-core.md` — Ownership, borrowing, lifetimes, and idiomatic safety patterns.
-- `rust-debugging.md` — Compiler diagnostics, LLDB/GDB use, and unsafe code investigation.
-- `rust-formatting.md` — rustfmt and Clippy guidance.
-- `rust-performance.md` — Benchmarking, allocation analysis, and profiling.
-
-### Shared (`skills/shared/`)
-- `debugging-methodology.md` — Cross-language debugging workflow: reproduce → observe → hypothesize → isolate → fix.
-- `polyglot-starter-index.md` — Overview and starter notes for the creator-first polyglot setup.
-
-## References
-
-- Accessibility checklist: `references/accessibility-checklist.md`
-- Accessible component generation: `references/accessible-component-generation.md`
-
-## How to use this repo
-
-- Browse `agents/` for orchestration agents you can run or adapt.
-- Open `skills/` to find the domain-specific guidance an agent will invoke.
-- Use `templates/` (when present) to scaffold projects with recommended devDependencies and CI snippets (e.g., accessibility templates for frontend).
-
-## Claude plugin
-
-- Manifest: the plugin manifest lives at [/.claude-plugin/plugin.json](.claude-plugin/plugin.json#L1). It declares plugin `commands` for SKILLs and agent orchestrators.
-- What it does: each `command` maps a stable name to an `input_schema`/`response_schema` and a `handler` HTTP endpoint (e.g. `/api/commands/...` or `/api/agents/...`). A runtime server should implement those endpoints to execute the associated skill or agent orchestration.
-- Agents as orchestrators: several `agents/*.md` files (for example [agents/instructional-designer.md](agents/instructional-designer.md#L1)) were added as orchestrator commands in the manifest so the plugin can trigger multi-skill workflows.
-- Quick checks:
-
-```bash
-# validate JSON syntax
-node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json','utf8')) && console.log('OK')"
-
-# pretty-print (optional)
-python3 -m json.tool .claude-plugin/plugin.json | less -SR
+```sh
+claude --plugin-dir .
 ```
 
-- How to wire up: run a small HTTP server that implements the declared `handler.endpoint` routes. Each route should accept the command `input_schema` JSON, call the appropriate SKILL/agent logic (loading `skills/*/SKILL.md` as needed), and return JSON matching `response_schema`.
-- Example call (after running your handler server locally on port 3000):
+The manifest uses Claude Code's native plugin component paths. It does not define
+HTTP handlers; no command server is included in this repository.
 
-```bash
-curl -s -X POST http://localhost:3000/api/commands/instructional_designer/orchestrate \
-	-H 'Content-Type: application/json' \
-	-d '{"projectName":"Demo","audience":"Engineers","durationWeeks":2}'
+## Use with VS Code
+
+Workspace settings point to the existing `skills/` directory and individual
+agent directories, so prompts do not need to be duplicated under `.github/`.
+When adding or renaming an agent or skill, update `.vscode/settings.json`.
+
+## Validation
+
+```sh
+npm run validate:frontmatter
+node scripts/validate_skills.cjs
 ```
 
----
-Generated by the repository maintenance assistant.
+Claude Code's CLI can also validate the plugin manifest:
 
-## Manual skills validation (official `skills-ref`)
-
-The Agent Skills reference validator (`skills-ref`) is a Python tool provided in the AgentSkills repo. It is not published to npm; to run it locally you can create a temporary virtualenv and install the `skills-ref` subpackage from the GitHub repository. Example (safe, manual steps):
-
-```bash
-# create a temporary venv (adjust path as desired)
-python3 -m venv /tmp/agentskills-venv
-/tmp/agentskills-venv/bin/python -m pip install --upgrade pip setuptools wheel
-
-# install skills-ref from the AgentSkills GitHub repo
-/tmp/agentskills-venv/bin/python -m pip install \
-	'git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref'
-
-# validate the skills directory (validator checks SKILL.md frontmatter, names, and basic layout)
-/tmp/agentskills-venv/bin/skills-ref validate ./skills
-
-# when finished, remove the temporary venv
-rm -rf /tmp/agentskills-venv
+```sh
+claude plugin validate .
 ```
-
-Notes:
-- The validator checks that each skill directory contains a valid `SKILL.md` with required frontmatter fields (`name`, `description`) and that the `name` matches its parent directory.
-- We intentionally keep validation as a manual step; run the commands above when you want to confirm repository-wide skill conformance before publishing or sharing.

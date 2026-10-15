@@ -16,7 +16,7 @@ function walkDir(dir) {
     const full = path.join(dir, entry.name)
     if (entry.isDirectory()) {
       results.push(...walkDir(full))
-    } else if (entry.isFile() && full.endsWith('.md')) {
+    } else if (entry.isFile() && ['agent.md', 'SKILL.md'].includes(entry.name)) {
       results.push(full)
     }
   }

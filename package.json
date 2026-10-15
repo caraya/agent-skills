@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "validate:frontmatter": "node scripts/validate_frontmatter.bundle.js"
+    "validate:frontmatter": "node scripts/validate_frontmatter.bundle.cjs"
   },
   "keywords": [],
   "author": "Carlos Araya (https://publishing-project.rivendellweb.net)",

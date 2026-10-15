@@ -1,67 +1,74 @@
 # Agent Skills Repository
 
-This repository contains custom agents and skills for AI coding assistants. The content is authored for VS Code Copilot but the domain knowledge inside each file is tool-agnostic and can be applied directly.
+This repository contains reusable agent instructions and Agent Skills for Claude
+Code and VS Code. Keep the source layout canonical; platform-specific discovery is
+configured in each tool rather than maintained through duplicated prompt files.
 
-## Repository Structure
+## Source layout
 
-```
-agents/     — Orchestration agents (high-level workflows)
-skills/     — Domain-specific skill files (detailed technical guidance)
-references/ — Reference documents (checklists, style guides, etc.)
-```
+- `agents/<agent-name>/agent.md` contains an agent prompt with YAML frontmatter.
+- `agents/<agent-name>/agent.json`, when present, contains supplementary metadata.
+- `skills/<skill-name>/SKILL.md` contains an Agent Skill with `name` and
+  `description` frontmatter. Skill names must match their directory names.
+- Skill references, scripts, and assets stay alongside their owning `SKILL.md`.
+- `references/` contains shared supporting material.
 
 ## Agents
 
-| File | Purpose |
-|---|---|
-| `agents/content-editor.md` | Senior editorial review of technical content before publication. Five-dimension review framework: correctness, architecture, readability, code examples, style. Asks for guidance when blocked. |
-| `agents/content-ideation.md` | Generates first-draft Markdown from a text input or URL. Outputs frontmatter metadata. Does NOT auto-invoke content-editor — human reviews the draft manually. |
-| `agents/polyglot-engineering.md` | Creator-first engineering agent for TypeScript, JavaScript, Python, Go, and Rust. Scaffolds projects when absent, implements features by default, formats code as the final step. |
-| `agents/polyglot-performance.md` | Measures bottlenecks and recommends optimizations for TypeScript, JavaScript, Python, Go, and Rust. |
-| `agents/content-summarizer.md` | Fetches a URL and returns variable-length summaries; asks for a preferred length if not provided; outputs a structured summary object plus a human-readable summary. |
+- `content-editor` reviews technical content across correctness, architecture,
+  readability, code examples, and style.
+- `content-ideation` drafts structured Markdown from text or a URL.
+- `content-summarizer` produces variable-length summaries from URLs.
+- `instructional-designer-dev-content` plans developer learning experiences.
+- `polyglot-engineering` scaffolds projects and implements features across the
+  supported languages.
+- `polyglot-performance` measures bottlenecks and recommends optimizations.
+- `presentation-builder` creates offline-ready Inspire.js presentations.
 
-## Skills
+## Core conventions
 
-Each skill provides detailed checklists, patterns, and output requirements for a specific domain.
+- Implement first. `polyglot-engineering` defaults to implementation; switch to
+  review mode only when explicitly requested.
+- Format last, using the relevant language skill.
+- Ask for guidance when blocked instead of guessing.
+- Do not auto-chain content workflows. `content-ideation` and `content-editor`
+  are independent stages; the human chooses when to run each.
+- Keep orchestration agents language-agnostic and put language-specific depth in
+  skills.
 
-### Content (`skills/content/`)
-- `style-lookup.md` — Style arbitration using Google developer docs style, Chicago fallback.
-- `code-example-validation.md` — Quality gate for documentation code samples.
+## Claude Code
 
-### Frontend (`skills/frontend/`)
-- `ui-engineering.md` — Framework-agnostic UI engineering: accessibility (WCAG 2.1 AA), design system adherence, responsive design, avoiding the AI aesthetic.
-- `react-ui.md` — React-specific: component architecture, hooks, state management patterns, optimistic updates.
+`.claude-plugin/plugin.json` is the Claude Code plugin manifest. It explicitly
+registers the skill directory and each agent prompt because agents are stored in
+per-agent subdirectories. Keep manifest paths relative to the repository root.
+The plugin can be loaded locally with `claude --plugin-dir .`.
 
-### Language Skills
+Do not add API endpoint definitions to `plugin.json`. Claude Code plugin commands
+are Markdown files, not HTTP handlers; this repository does not include a handler
+server.
 
-Each language has up to five skills: core, testing, debugging, formatting, and performance.
+## VS Code
 
-| Directory | Languages |
-|---|---|
-| `skills/typescript/` | core, testing, debugging, formatting, performance |
-| `skills/javascript/` | core, testing, debugging, formatting, performance |
-| `skills/python/` | core, testing, debugging, formatting, performance |
-| `skills/go/` | core, testing, debugging, formatting, performance |
-| `skills/rust/` | core, debugging, formatting, performance |
+`.vscode/settings.json` points VS Code to the canonical `skills/` directory and
+each agent prompt directory. Keep those paths synchronized with additions or
+renames under `agents/` and `skills/`. This allows VS Code to discover the current
+layout without copying prompts into platform-specific folders.
 
-**Language-specific tool defaults:**
-- TypeScript / JavaScript: Prettier, ESLint
-- Python: Black, isort, pytest
-- Go: gofmt, goimports, golangci-lint
-- Rust: rustfmt, Clippy, criterion
+## Authoring and validation
 
-### Shared (`skills/shared/`)
-- `debugging-methodology.md` — Cross-language debugging workflow: reproduce → observe → hypothesize → isolate → fix.
-- `polyglot-starter-index.md` — Overview of the creator-first polyglot setup and how to extend it.
-
-## Key Conventions
-
-- **Implement first.** `polyglot-engineering` defaults to writing code, not reviewing it. Switch to review mode only when explicitly requested.
-- **Format last.** Every code change ends by invoking the appropriate language formatting skill.
-- **Ask when blocked.** Agents do not autonomously guess or fill gaps — they surface ambiguity and ask for guidance.
-- **No auto-chaining.** `content-ideation` and `content-editor` are independent pipeline stages. The human decides when to invoke each.
-- **One agent, language skills.** Orchestration agents stay language-agnostic; language depth lives in skills.
+- Keep agent and skill instructions tool-agnostic where possible. Put platform
+  discovery details in the manifest or editor settings, not in shared prompts.
+- Use relative links for resources within a skill, and repository-relative paths
+  for resources shared across agents and skills.
+- Preserve the `SKILL.md` filename and required `name` and `description`
+  frontmatter fields.
+- Validate agent and skill frontmatter with `npm run validate:frontmatter`, and
+  validate skill names with `node scripts/validate_skills.cjs`.
+- When changing agent names or locations, update the Claude manifest and VS Code
+  settings in the same change.
 
 ## References
 
-- `references/accessibility-checklist.md` — WCAG 2.1 AA checklist for frontend work.
+- `references/accessibility-checklist.md` is the WCAG 2.1 AA checklist.
+- `references/accessible-component-generation.md` covers accessible component
+  generation.
