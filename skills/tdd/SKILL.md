@@ -27,7 +27,9 @@ what the last cycle taught you about the actual behavior and interface.
 - Avoid conditional assertions: assert the branch first, then assert branch-specific values.
 - Test both branches for conditionals, fallbacks, and error paths.
 - Exercise public interfaces and runtime contracts rather than private helpers.
-- Follow applicable repo skills and `AGENTS.md` rules for the touched area.
+- Follow applicable repo skills and `AGENTS.md` rules for the touched area. If they conflict
+  with the Plaited Defaults above, the area-specific `AGENTS.md` rules take precedence;
+  otherwise apply the defaults.
 
 ## When Starting Work
 
@@ -50,9 +52,20 @@ For each behavior:
 
 1. Add or update exactly one focused test.
 2. Run the targeted test and confirm it fails for the intended reason.
+   If a missing interface causes a compile or import failure, add the minimal interface stub
+   (no behavior) and confirm the test then fails on its assertion before accepting RED.
+   A RED that fails only because of a typo or unrelated error is not valid.
 3. Implement only enough code to pass.
+   If passing the test requires a change larger than one focused slice, revert the test added
+   in this cycle, choose a smaller observable behavior, and restart RED. If a GREEN change
+   breaks other tests, fix or revert that change before moving to REFACTOR; never advance
+   with a red suite.
 4. Run the same targeted test and confirm it passes.
 5. Refactor if useful, then rerun the affected tests.
+
+After the final cycle and before handoff, run the full `bun test` suite and
+`bun --bun tsc --noEmit` (or the area-specific `AGENTS.md` equivalents). Do not run the
+full suite between cycles unless a refactor touched shared code.
 
 If the test passes before production code changes, it is not a valid RED signal. Tighten the test,
 choose a different behavior, or explain why existing coverage already proves the behavior.

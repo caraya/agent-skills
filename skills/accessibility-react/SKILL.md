@@ -1,6 +1,6 @@
 ---
 name: accessibility-react
-description: "React-specific accessibility skill for WCAG 2.1 AA compliance, keyboard navigation, ARIA patterns, focus management, meaningful empty and error states, responsive design, and loading transitions. Trigger phrases: React accessibility, React ARIA, focus refs, JSX accessibility, accessible components."
+description: "React-specific accessibility skill for WCAG 2.2 AA compliance, keyboard navigation, ARIA patterns, focus management, meaningful empty and error states, responsive design, and loading transitions. Trigger phrases: React accessibility, React ARIA, focus refs, JSX accessibility, accessible components."
 ---
 
 # Accessibility React
@@ -28,7 +28,7 @@ This skill provides React-specific best practices for building accessible UIs. I
 
 ## Shared Reference
 
-When generating or scaffolding components, use `references/accessible-component-generation.md` as the source of truth for semantics, accessible names, keyboard behavior, focus handling, and non-happy-path states. Apply the React addendum in that reference for framework-specific patterns.
+When generating or scaffolding components, use `references/accessible-component-generation.md` as the source of truth for semantics, accessible names, keyboard behavior, focus handling, and non-happy-path states. Apply the React addendum in that reference for framework-specific patterns. If `references/accessible-component-generation.md` cannot be found or read, fall back to the Guidelines checklist in this document and WCAG 2.2 / APG, and state explicitly that the shared reference was unavailable.
 
 ## Guidelines
 
@@ -38,8 +38,8 @@ When generating or scaffolding components, use `references/accessible-component-
 - [ ] Focus order matches DOM/visual order
 - [ ] Focus ring is visible (use :focus-visible or custom styles)
 - [ ] Custom widgets support keyboard events (Enter, Space, Escape)
-- [ ] No keyboard traps (user can always Tab away)
-- [ ] Modals/dialogs trap focus while open, return focus on close (see `focus-trap-react`)
+- [ ] No keyboard traps (user can always Tab away), except intentional modal focus trapping as described below
+- [ ] Modals/dialogs are the intended exception: they trap focus while open, provide Escape as the exit mechanism, and return focus on close (see `focus-trap-react`)
 
 ### Screen Readers
 - [ ] All images use `alt` prop (`<img alt="..." />`)

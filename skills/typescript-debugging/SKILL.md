@@ -17,13 +17,13 @@ description: "TypeScript debugging skill for sourcemap setup, type-safe debuggin
 1. Sourcemaps
 - Ensure `sourceMap: true` in tsconfig.json.
 - Verify `.map` files are alongside compiled `.js` files.
-- In Node: use `--source-map-support` or the `source-map-support` package.
-- In VS Code: configure `.vscode/launch.json` with `sourceMapPathOverride` if needed.
+- In Node: use `node --enable-source-maps` (Node 12.12+) or install the `source-map-support` package and add `import 'source-map-support/register'`.
+- In VS Code: configure `.vscode/launch.json` with `"sourceMaps": true` and `"sourceMapPathOverrides"` if compiled paths differ from source paths.
 
 2. Debugging tools
 - **VS Code Debugger**: Set breakpoints, step through code, inspect variables (native sourcemap support).
 - **Node.js Inspector**: `node --inspect` or `node --inspect-brk` to use Chrome DevTools or VS Code.
-- **Async stack traces**: Enable `--stack-trace-async` (Node 12+) to see full promise chain.
+- **Async stack traces**: `--async-stack-traces` are enabled by default in Node 12+; if traces are truncated, ensure the code uses `await` rather than detached `.then()` chains so V8 can link the frames.
 
 ## Checklist
 
@@ -34,7 +34,7 @@ description: "TypeScript debugging skill for sourcemap setup, type-safe debuggin
 
 2. Async debugging
 - Inspect promise rejection handlers; missing `.catch()` silently fails.
-- Use `--stack-trace-async` for full async context in crashes.
+- Async stack traces (`--async-stack-traces`) are enabled by default in Node 12+; if traces are truncated, ensure the code uses `await` rather than detached `.then()` chains so V8 can link the frames.
 - Verify async function return types are Promise-like, not fire-and-forget.
 
 3. Memory and resource leaks

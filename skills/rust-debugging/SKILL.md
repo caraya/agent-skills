@@ -32,7 +32,7 @@ description: "Rust debugging skill for diagnosing borrow checker errors, panics,
 
 4. **Async debugging**
 - `tokio-console`: Real-time task inspection for Tokio async runtimes.
-- Enable `TOKIO_CONSOLE=1` with the `console-subscriber` crate.
+- Add the `console-subscriber` crate, call `console_subscriber::init()` at startup, and build with `RUSTFLAGS="--cfg tokio_unstable" cargo run`; then run `tokio-console` in a separate terminal.
 
 ## Checklist
 
@@ -52,11 +52,13 @@ description: "Rust debugging skill for diagnosing borrow checker errors, panics,
 - Verify raw pointer lifetimes and aliasing rules.
 
 4. Async task issues
-- Check for tasks blocked on a mutex inside an async context (use `tokio::sync::Mutex`).
+- Check for a `std::sync::Mutex` guard held across an `.await` point; only in that case switch to `tokio::sync::Mutex` or restructure so the guard is dropped before awaiting.
 - Verify futures are not dropped before completion.
 - Use `tokio-console` to inspect task state and identify deadlocks or stalls.
 
 ## Output Requirements
+
+If the user has not provided the compiler output, backtrace, or relevant code, first ask for the exact `rustc` error text (or `RUST_BACKTRACE=1` output) and the minimal code involved before proposing a fix. Do not invent error codes or backtraces.
 
 For each finding provide:
 - Compile error code or runtime symptom

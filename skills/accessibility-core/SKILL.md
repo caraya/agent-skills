@@ -1,6 +1,6 @@
 ---
 name: accessibility-core
-description: "Accessibility skill for WCAG 2.1 AA compliance, keyboard navigation, ARIA labels, focus management, meaningful empty and error states, responsive design, and loading transitions. Trigger phrases: accessibility, WCAG, ARIA, keyboard navigation, focus management, responsive design, loading states."
+description: "Accessibility skill for WCAG 2.2 AA compliance, keyboard navigation, ARIA labels, focus management, meaningful empty and error states, responsive design, and loading transitions. Trigger phrases: accessibility, WCAG, ARIA, keyboard navigation, focus management, responsive design, loading states."
 ---
 
 # Accessibility Core
@@ -10,8 +10,7 @@ The Accessibility Core skill provides essential features to ensure your applicat
 ## Features
 
 - **Keyboard Navigation**: Enables users to navigate through the application using keyboard shortcuts and tab navigation.
-- **ARIA Labels**: Provides support for ARIA (Accessible Rich Internet Applications) labels to
-- enhance screen reader compatibility and improve accessibility for users with disabilities.
+- **ARIA Labels**: Provides support for ARIA (Accessible Rich Internet Applications) labels to enhance screen reader compatibility and improve accessibility for users with disabilities.
 - **Focus Management**: Ensures that focus is properly managed when navigating through the application,especially when modals, dialogs, or dynamic content are involved.
 - **Meaningful Empty and Error States**: Displays informative messages and visuals when there are no results to show or when an error occurs, helping users understand the situation and how to proceed.
 - **Responsive Design**: Adapts the layout and content to different screen sizes and orientations, ensuring a seamless experience across devices.
@@ -29,7 +28,7 @@ This skill is designed to enhance the accessibility of your application by imple
 
 ## Shared Reference
 
-When generating or scaffolding components, use `references/accessible-component-generation.md` as the source of truth for semantics, accessible names, keyboard behavior, focus handling, and non-happy-path states.
+When generating or scaffolding new components, use `references/accessible-component-generation.md` as the source of truth for semantics, accessible names, keyboard behavior, focus handling, and non-happy-path states; run the automated testing tools afterwards, once the component renders in a working app. If `references/accessible-component-generation.md` cannot be found, fall back to the Guidelines checklist in this document and the APG "Keyboard Interaction" sections, and state that the reference file was unavailable.
 
 ## Guidelines
 
@@ -38,13 +37,13 @@ When generating or scaffolding components, use `references/accessible-component-
 - [ ] Focus order follows visual/logical order
 - [ ] Focus is visible (outline/ring on focused elements)
 - [ ] Custom widgets have keyboard support (Enter to activate, Escape to close)
-- [ ] No keyboard traps (user can always Tab away from a component)
+- [ ] No keyboard traps (user can always Tab away from a component; open modals are the one exception — see below)
 - [ ] Skip-to-content link at top of page
-- [ ] Modals trap focus while open, return focus on close
+- [ ] Modals trap focus while open and return focus on close; the user can always dismiss the modal (for example, by pressing Escape, clicking outside it, or activating a dedicated close button)
 
 ### Screen Readers
 - [ ] All images have `alt` text (or `alt=""` for decorative images)
-- [ ] All form inputs have associated labels (`<label>` or `aria-label`)
+- [ ] Every input has a visible `<label>`; use `aria-label` only for icon-only controls or when a visible label is impossible
 - [ ] Buttons and links have descriptive text (not "Click here")
 - [ ] Icon-only buttons have `aria-label`
 - [ ] Page has one `<h1>` and headings don't skip levels
@@ -52,21 +51,21 @@ When generating or scaffolding components, use `references/accessible-component-
 - [ ] Tables have `<th>` headers with scope
 
 ### Visual
-- [ ] Text contrast ≥ 4.5:1 (normal text) or ≥ 3:1 (large text, 18px+)
+- [ ] Text contrast ≥ 4.5:1 (normal text) or ≥ 3:1 (large text: ≥ 24px regular or ≥ 18.66px bold)
 - [ ] UI components contrast ≥ 3:1 against background
 - [ ] Color is not the only way to convey information
 - [ ] Text resizable to 200% without breaking layout
 - [ ] No content that flashes more than 3 times per second
 
 ### Forms
-- [ ] Every input has a visible label
+- [ ] Every input has a visible `<label>`; use `aria-label` only for icon-only controls or when a visible label is impossible
 - [ ] Required fields indicated (not by color alone)
 - [ ] Error messages specific and associated with the field
 - [ ] Error state visible by more than color (icon, text, border)
 - [ ] Form submission errors summarized and focusable
 
 ### Content
-- [ ] Language declared (`<html lang="en">`)
+- [ ] Language declared matching the page's content language (e.g., `<html lang="en">`)
 - [ ] Page has a descriptive `<title>`
 - [ ] Links distinguish from surrounding text (not by color alone)
 - [ ] Touch targets ≥ 44x44px on mobile
@@ -78,10 +77,12 @@ For component scaffolding rules and anti-patterns, follow `references/accessible
 
 ## Testing Tools
 
+When auditing or fixing an existing, working app, run the automated testing tools first, before suggesting any changes. The tool output identifies the concrete issues; base each suggested change on a reported finding and explain why it is needed. Run the automated tools yourself (for example, against a local dev server or built page); only fall back to asking the user to run them when you cannot. When creating new components, follow the Shared Reference guidance instead and audit after the component renders.
+
 ```bash
 # Automated audit
-npx axe-core          # Programmatic accessibility testing
-npx pa11y             # CLI accessibility checker
+npx @axe-core/cli <url>   # CLI accessibility audit (axe-core itself is a library to integrate programmatically)
+npx pa11y <url>           # CLI accessibility checker
 
 # In browser
 # Chrome DevTools → Lighthouse → Accessibility

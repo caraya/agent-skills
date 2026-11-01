@@ -132,6 +132,8 @@ Every component must meet these standards.
 
 For final WCAG 2.1 AA gating and verification, invoke the `ui-accessibility` skill and apply checks from `references/accessibility-checklist.md`.
 
+If the `ui-accessibility` skill or `references/accessibility-checklist.md` is not available, perform the Verification checklist in this document yourself, state explicitly in the summary that external accessibility gating was skipped, and do not claim WCAG compliance.
+
 ### Keyboard Navigation
 
 Every interactive element must be reachable and operable with a keyboard:
@@ -212,11 +214,9 @@ Avoid fixed widths that break at small viewports. Use `max-width` with responsiv
 Quick example to run when finishing a UI change (framework-agnostic):
 
 - Run the app locally (e.g., `npm start` or framework dev server).
-- Automated checks: `npx axe-core ./path/to/page-or-static.html` and/or `npx pa11y http://localhost:3000/route`.
+- Automated checks: `npx @axe-core/cli http://localhost:3000/route --save axe-report.json` and `npx pa11y http://localhost:3000/route --reporter html > pa11y-report.html`.
 - Manual checks: keyboard-only navigation, screen reader smoke test, and zoom to 200%.
-- Final gating: invoke the `ui-accessibility` skill and attach the checklist report from `references/accessibility-checklist.md`.
-
-- Agent invocation (one-liner): Invoke `ui-accessibility` attaching `axe-report.json`, `pa11y-report.html`, and `manual-checks.md` as artifacts.
+- Final gating: record manual results in `manual-checks.md`, complete the checklist from `references/accessibility-checklist.md`, then invoke `ui-accessibility` with the completed checklist and the three report files (`axe-report.json`, `pa11y-report.html`, and `manual-checks.md`). If the skill or checklist is unavailable, use the fallback described above.
 
 ## Common Rationalizations
 

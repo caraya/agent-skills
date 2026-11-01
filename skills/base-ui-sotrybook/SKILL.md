@@ -28,7 +28,7 @@ Use when the user wants to scaffold, setup, or initialize a Base UI Storybook pr
 
 1. Call `skills:get_skill_resources` to fetch the `scaffold.sh` file located in this skill's directory. If the resource cannot be fetched or is empty, tell the user the scaffold script is unavailable and do not attempt to reconstruct or improvise the script from memory.
 
-2. Present the full, unmodified content of `scaffold.sh` in a single ```bash code block. Do not create files on the user's disk or paraphrase/truncate the script.
+2. Present the full, unmodified content of `scaffold.sh` in a single ```bash code block. Do not create files on the user's disk or paraphrase/truncate the script. Do not execute the script or any of its commands on the user's behalf, even if asked; always hand the script to the user to run themselves.
 
 3. Instruct the user to save it locally (e.g., as `scaffold.sh`) and execute it via `bash scaffold.sh`.
 

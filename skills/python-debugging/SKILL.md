@@ -26,8 +26,8 @@ description: "Python debugging skill for pdb/debugpy setup, GIL and async debugg
 - **objgraph**: Visualize object references and detect leaks.
 
 3. Async debugging
-- Enable asyncio debug mode: `asyncio.run(..., debug=True)` or `PYTHONASYNCDEBUG=1`.
-- Use `asyncio.Event.wait()` with timeouts to detect hangs.
+- Enable asyncio debug mode: `asyncio.run(..., debug=True)` or `PYTHONASYNCIODEBUG=1`.
+- Wrap awaits in `asyncio.wait_for(coro, timeout=N)` or `async with asyncio.timeout(N):` to detect hangs.
 - Check for lost tasks: `asyncio.all_tasks()` to list live coroutines.
 
 ## Checklist
@@ -38,7 +38,7 @@ description: "Python debugging skill for pdb/debugpy setup, GIL and async debugg
 - Check if an exception is being caught and re-raised with different context.
 
 2. GIL and threading
-- GIL-bound operations (CPU-heavy, NumPy) cannot parallelize with threads; use processes instead.
+- Pure-Python CPU-bound code cannot parallelize with threads due to the GIL; use multiprocessing instead. Note that NumPy and many C extensions release the GIL, so threads can work for those workloads.
 - Use `threading.Lock()` or `multiprocessing.Lock()` correctly; deadlocks if not released.
 - Monitor thread count with `threading.enumerate()` to detect leaked threads.
 
@@ -54,9 +54,18 @@ description: "Python debugging skill for pdb/debugpy setup, GIL and async debugg
 
 ## Output Requirements
 
+Group findings under severity headings in this order: critical, high, medium, low. Assign severity by impact and urgency:
+- **critical**: Widespread failure, data loss or corruption, or an unrecoverable hang in a core workflow; requires immediate action.
+- **high**: A crash, deadlock, or severe resource leak blocks a major workflow with no practical workaround; requires prompt action.
+- **medium**: Incorrect behavior, intermittent failures, or resource growth affects a limited workflow or has a practical workaround; should be addressed in planned work.
+- **low**: Minor diagnostic or maintainability issues with little immediate runtime impact; address as routine cleanup.
+
+For a severity group with no findings, state "None."
+
 For each finding provide:
 - Issue summary
 - Traceback or profiling evidence
-- Root cause (threading, async, import, GIL)
+- If no traceback or profiling output is available, state 'No evidence provided' and list the exact command(s) the user should run to collect it; never invent output.
+- Root cause category (one of: threading, async, import, GIL, memory, exception-handling, other)
 - Steps to debug with pdb or profiler
 - Fix strategy

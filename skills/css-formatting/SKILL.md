@@ -13,16 +13,17 @@ Recommended tools:
 - Editor integrations: format-on-save and shared editorconfig to reduce friction.
 
 Opinionated rules (suggested):
+- If the repository has an existing style guide or token system, align with it where possible.
 - Use custom properties for tokens and keep tokens in a separate file.
-- Enforce lowercase hex or prefer token names; avoid inline literal hex values in components.
-- Prefer logical properties (margin-block, padding-inline) where supported.
+- Prefer token names; avoid inline literal hex values in components.
+- Use logical properties (margin-block, padding-inline, inset-inline) instead of physical ones unless the repository's browserslist targets browsers that lack support; if no browserslist is present, assume modern evergreen browsers and use logical properties.
 
 Property ordering:
 - Group by box model → positioning → typography → visual (color, background) → transforms/animation.
 
 Color rules:
-- Prefer semantic token usage: `var(--color-text)`.
-- For generated palettes, produce OKLCH values or tokenized variants; delegate complex color decisions to `color-expert`.
+- Prefer semantic token usage: `var(--color-text)`
+- For generated palettes, produce OKLCH values or tokenized variants; delegate complex color decisions to the `color-expert` skill. If the `color-expert` skill is not available, do not generate palette or contrast values yourself; ask the user to provide the final color values (or enable the `color-expert` skill) and continue with tokenized placeholders such as `var(--color-primary)` in the meantime.
 
 CI integration:
 - Add `stylelint` and `prettier --check` steps to CI to fail on style violations.

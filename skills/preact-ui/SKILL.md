@@ -58,18 +58,31 @@ Follow the project design system for spacing, typography, and color tokens. For 
 When finalizing a Preact component change, run this short flow:
 
 - Start the dev server (`npm start`, `pnpm dev`, or equivalent).
-- Run automated accessibility checks: `npx axe-core ./path/to/page-or-story.html` and/or `npx pa11y http://localhost:3000/route`.
+- Run automated accessibility checks: `npx @axe-core/cli http://localhost:3000/route --save axe-report.json` and/or `npx pa11y http://localhost:3000/route --reporter html > pa11y-report.html`.
 - Run component/unit tests and Storybook visual checks where available (`npm test`, `npm run test:visual`).
-- Final gating: invoke the `ui-accessibility` skill and attach the generated checklist report from `references/accessibility-checklist.md`.
+- Final gating: invoke the `ui-accessibility` skill, complete the checklist from `references/accessibility-checklist.md`, save it as `manual-checks.md`, and attach that report.
 
 - Agent invocation (one-liner): Invoke `ui-accessibility` attaching `axe-report.json`, `pa11y-report.html`, and `manual-checks.md` as artifacts.
 
 ## Output Requirements
 
-For each finding or completed build session provide:
+When reviewing existing code, group findings under severity headings in this order: **Critical**, **High**, **Medium**, and **Low**. Omit headings with no findings. Each finding should include:
 
 - **Location** — Component name and file path.
 - **Category** — Accessibility, state management, design system, component architecture, responsive design, or performance.
-- **Severity** — Critical, Important, Suggestion.
 - **Evidence** — What was observed or what the code does currently.
 - **Fix** — Minimal corrected code example or specific action to take.
+
+Use these severity definitions consistently:
+
+- **Critical** — A severe issue that blocks core functionality or creates an immediate, substantial accessibility barrier for users.
+- **High** — A major issue that prevents or significantly impairs an important user task, with no reasonable workaround.
+- **Medium** — A meaningful issue that degrades usability or accessibility but has a reasonable workaround.
+- **Low** — A minor issue with limited user impact, polish, or maintainability implications.
+
+When completing a build session, provide:
+
+- **Files Created/Modified**
+- **Summary of Behavior**
+- **Accessibility Checks Run** — Include pass/fail results.
+- **Open Follow-ups**

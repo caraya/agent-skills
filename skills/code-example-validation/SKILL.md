@@ -42,9 +42,11 @@ Evaluate each example against all checks:
 
 Return findings grouped by severity:
 
-- Critical: Incorrect behavior, broken example, missing required setup, or unsafe guidance.
-- Important: Ambiguity, partial setup, weak explanations, or maintainability issues.
+- Critical: Incorrect behavior, broken example, setup omissions that cause the example to fail when run as written, or unsafe guidance.
+- Important: Ambiguity, setup that is incomplete, implicit, or only referenced elsewhere but does not prevent the example from running as written, weak explanations, or maintainability issues.
 - Suggestion: Optional clarity improvements and stylistic polish.
+
+If a severity level has no findings, write `None` under that heading. If the example passes all checks, state `No issues found` and briefly list which checks were verified.
 
 For each finding include:
 - Location (file:line when available, otherwise quote snippet)
@@ -58,7 +60,7 @@ For each finding include:
 2. Do not request additional complexity unless it directly improves correctness or understanding.
 3. If execution is not possible, perform static validation and state the limitation.
 4. If language/runtime version is missing, flag it as Important.
-5. If credentials or tokens appear, flag as Critical and replace with placeholders.
+5. If credentials or tokens appear, flag as Critical and in the Minimal fix provide the exact placeholder replacement (e.g., `<YOUR_API_KEY>`); do not reproduce the real value in the report.
 
 ## Example Response Shape
 
@@ -68,10 +70,12 @@ Critical:
   Why it matters: readers may get different results than documented.
   Minimal fix: replace with `npm install --save-dev <package>` and update the command block.
 
-Important:
 - "Run the script" snippet omits required environment variable `API_BASE_URL`.
   Why it matters: example fails for first-time readers.
   Minimal fix: add an explicit export step before execution.
+
+Important:
+None
 
 Suggestion:
 - docs/tutorial.md:88 Include expected output for the final command to improve confidence.

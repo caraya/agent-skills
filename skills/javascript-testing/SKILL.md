@@ -12,6 +12,8 @@ Recommended runners:
 - Vitest (Vite/Esm-native projects)
 - Mocha + Chai + Sinon (explicit control)
 
+Runner selection: If the project already has a test runner configured (check `package.json` devDependencies and config files), use it and do not suggest migrating. Otherwise choose Vitest for Vite/ESM projects, Jest for other Node/CommonJS or React projects, and Mocha only if the user requests it.
+
 Checklist
 - AAA pattern (Arrange, Act, Assert) and descriptive test names
 - Avoid shared mutable state across concurrent tests
@@ -37,4 +39,5 @@ File,TestName,ObservedBehavior,SuggestedFix
 tests/api.test.js,"handles slow response","timeout in CI","increase timeout; mock network; make deterministic"
 
 Output requirements
-- For each finding provide: file and line, risk, why it matters, minimal fix with code example.
+- When diagnosing or reviewing existing tests, report each finding with: file and line, risk (high/medium/low), why it matters, and a minimal fix with a code example. Use the CSV triage format only when the user asks for a flaky-test triage table.
+- When setting up new test infrastructure, output the recommended runner, config file, and an example test instead of findings.

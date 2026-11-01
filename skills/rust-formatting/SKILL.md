@@ -35,14 +35,16 @@ imports_granularity = "Crate"
 group_imports = "StdExternalCrate"
 ```
 
-### `.clippy.toml` or `Cargo.toml` (Clippy lints):
+Note: `imports_granularity` and `group_imports` are unstable options and are ignored on stable rustfmt. Either run `cargo +nightly fmt`, or omit these keys when the project uses the stable toolchain and verify that `cargo fmt` emits no 'unstable features' warnings.
+
+### `Cargo.toml` (Clippy lints, requires Rust 1.74+):
 ```toml
 [lints.clippy]
-pedantic = "warn"
-nursery = "warn"
 unwrap_used = "deny"
 expect_used = "warn"
 ```
+
+Enable `pedantic` and `nursery` only if the team opts in; `nursery` lints are unstable and may produce false positives. Resolve or explicitly allow existing warnings before enforcing `-- -D warnings` in CI.
 
 ### VS Code `.vscode/settings.json`:
 ```json
@@ -51,7 +53,7 @@ expect_used = "warn"
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
-  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.check.command": "clippy",
   "rust-analyzer.rustfmt.extraArgs": []
 }
 ```
@@ -60,7 +62,7 @@ expect_used = "warn"
 
 1. Consistency
 - `rustfmt` is configured with a `rustfmt.toml` that matches team preferences.
-- Clippy is run on CI with `-- -D warnings` to prevent regressions.
+- Clippy is run on CI with `-- -D warnings` after resolving or explicitly allowing existing warnings to prevent regressions.
 - Edition is explicitly set (`edition = "2021"` recommended).
 
 2. IDE integration
@@ -73,8 +75,8 @@ expect_used = "warn"
 - Prevents unformatted or lint-failing code from entering the repository.
 
 4. Import organization
-- `imports_granularity = "Crate"` groups imports by crate for readability.
-- `group_imports = "StdExternalCrate"` separates std, external, and local imports.
+- On nightly rustfmt, `imports_granularity = "Crate"` groups imports by crate for readability.
+- On nightly rustfmt, `group_imports = "StdExternalCrate"` separates std, external, and local imports; omit both keys on stable.
 
 ## Formatting Rules
 

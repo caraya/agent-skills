@@ -20,6 +20,7 @@ description: "Go performance skill for profiling, benchmarking, optimization inc
 
 2. **Runtime profiling (pprof)**
 - Add `import _ "net/http/pprof"` to enable profiling endpoint.
+- Start an HTTP server to serve the endpoint, e.g. `go func() { log.Println(http.ListenAndServe("localhost:6060", nil)) }()` (with `log` and `net/http` imported), or register `pprof` handlers on your existing mux.
 - Access profiles at `http://localhost:6060/debug/pprof/`.
 - CPU profile: `go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30`.
 - Heap: `go tool pprof http://localhost:6060/debug/pprof/heap`.
@@ -47,13 +48,13 @@ description: "Go performance skill for profiling, benchmarking, optimization inc
 - Verify goroutine cleanup on application shutdown.
 
 4. Lock contention
-- Profile with mutex contention tracking: use `pprof` and look for `sync.Mutex.Lock` in call graph.
+- Enable mutex profiling with `runtime.SetMutexProfileFraction(1)` (or `go test -bench=. -mutexprofile=mutex.prof`), then analyze `go tool pprof http://localhost:6060/debug/pprof/mutex` or `go tool pprof mutex.prof`. Use `/debug/pprof/block` (after `runtime.SetBlockProfileRate(1)`) for channel/select blocking.
 - If high contention, consider finer-grained locking or lock-free data structures.
-- Use `RWMutex` if read-heavy; `sync.Map` for concurrent map access.
+- Use `RWMutex` if read-heavy. Prefer a mutex-guarded map by default; use `sync.Map` only when keys are written once and read many times, or when goroutines access disjoint key sets. For high write contention, consider sharding the map.
 
 5. Channel and concurrency patterns
 - Avoid goroutine-per-request at scale; use worker pools.
-- Ensure channels are properly closed; leaking goroutines waits on closed channels.
+- Ensure channels are closed by the sender when no more values will be sent; goroutines leak when they block forever on a channel that is never closed, never written to, or never read from. Use `context` cancellation or a `done` channel in `select` to guarantee exit.
 
 ## Output Requirements
 
@@ -62,4 +63,6 @@ For each finding provide:
 - Profiling evidence (goroutine count, CPU profile, allocation trace).
 - Root cause (algorithm, allocation, lock, goroutine leak).
 - Optimization strategy and expected improvement (e.g., "Reduce allocations by X%").
-- Effort and risk assessment.
+- Effort (Low: <1 hour, localized change / Medium: 1–4 hours, touches multiple functions / High: >4 hours or architectural change) and Risk (Low: no behavior change / Medium: concurrency or API surface changes / High: changes to shared state, locking, or lifecycle), each with a one-sentence justification.
+
+If benchmark or profile data is not available, do not invent numbers or profiling evidence. State "Measurement: not available" and/or "Profiling evidence: not available" as appropriate, and provide the exact command(s) the user should run to obtain it (e.g., `go test -bench=BenchmarkX -benchmem -cpuprofile=cpu.prof`). Mark expected improvements as estimates.

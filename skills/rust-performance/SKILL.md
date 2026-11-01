@@ -27,7 +27,7 @@ description: "Rust performance skill for profiling, benchmarking, allocation ana
 
 3. **Memory and allocation analysis**
 - **heaptrack** (Linux): Tracks heap allocations with call stacks.
-- **dhat** (via valgrind): Detailed heap profiling.
+- **dhat** (Rust crate `dhat`): Pure-Rust heap profiler producing valgrind DHAT-compatible output viewable in the DHAT viewer; no valgrind installation required.
 - **jemalloc with stats**: Use `tikv-jemallocator` for allocation statistics.
 
 4. **Compilation performance**
@@ -47,7 +47,7 @@ description: "Rust performance skill for profiling, benchmarking, allocation ana
 - Use iterators with zero-cost abstractions; prefer `iter()` over manual indexing.
 
 3. Memory and allocations
-- Use `cargo bench` with `--features dhat-heap` to count allocations per operation.
+- Add the `dhat` crate behind a `dhat-heap` cargo feature (declare it in `Cargo.toml` and initialize `dhat::Profiler::new_heap()` in `main`), then run `cargo run --release --features dhat-heap` to count allocations per operation.
 - Preallocate `Vec` and `HashMap` with `with_capacity()` when size is known.
 - Use `Box`, `Rc`, or `Arc` only at ownership boundaries, not for routine values.
 - Consider stack allocation or arena allocators for high-frequency short-lived objects.
@@ -67,6 +67,7 @@ description: "Rust performance skill for profiling, benchmarking, allocation ana
 
 For each finding provide:
 - Measurement (criterion output, flamegraph, allocation count).
+  - If no profiling data is available, state that the finding is based on static analysis, describe the exact command the user should run to measure it, and label the expected improvement as a hypothesis rather than a measured result.
 - Root cause (CPU, allocation, clone, async contention, compile time).
 - Optimization strategy with expected improvement.
-- Effort and risk assessment (safe vs. unsafe optimization).
+- Effort (small/medium/large) and risk assessment: note whether the optimization requires `unsafe` code and whether it changes observable behavior or API.

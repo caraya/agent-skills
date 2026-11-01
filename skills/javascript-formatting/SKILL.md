@@ -21,7 +21,7 @@ description: "JavaScript formatting skill for Prettier, ESLint, and Node.js proj
 2. **ESLint** (for linting and auto-fixes)
 - Use `eslint-config-prettier` to prevent conflicts with Prettier.
 - Run with `--fix` for automatic corrections.
-- Install: `npm install --save-dev eslint eslint-config-prettier`.
+- Install: `npm install --save-dev eslint@^9 @eslint/js globals eslint-config-prettier`.
 
 ## Configuration
 
@@ -38,14 +38,25 @@ description: "JavaScript formatting skill for Prettier, ESLint, and Node.js proj
 }
 ```
 
-### ESLint `.eslintrc.json`:
-```json
-{
-  "extends": ["eslint:recommended", "prettier"],
-  "parserOptions": { "ecmaVersion": 2020, "sourceType": "module" },
-  "env": { "node": true, "browser": true },
-  "rules": {}
-}
+### ESLint 9 flat config (`eslint.config.js`):
+```js
+import js from "@eslint/js";
+import globals from "globals";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
+
+export default [
+  js.configs.recommended,
+  {
+    files: ["**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      }
+    }
+  },
+  eslintConfigPrettier
+];
 ```
 
 ### VS Code `.vscode/settings.json`:

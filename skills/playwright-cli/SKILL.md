@@ -221,8 +221,9 @@ playwright-cli open --browser=webkit
 playwright-cli open --browser=msedge
 
 # Emulate a generic mobile device (Pixel 10 for Chromium, iPhone 17 for WebKit).
-# Prefer this when a mobile layout is acceptable: mobile pages are usually
-# lighter, so snapshots are smaller and cheaper.
+# Use --mobile only when the user has not specified a device/viewport AND the task
+# is not about desktop layout, responsive-breakpoint testing, or reproducing a
+# desktop-specific bug. Otherwise open the default desktop browser.
 playwright-cli open --mobile
 playwright-cli open --device="iPhone 15"
 
@@ -305,6 +306,8 @@ playwright-cli find --regex "\\$[0-9]+\\.[0-9]{2}"
 ## Targeting elements
 
 By default, use refs from the snapshot to interact with page elements.
+
+Refs are only valid for the snapshot they came from. If a command reports that a ref was not found, the element is not visible, or the action timed out, run `playwright-cli snapshot` (or `playwright-cli find`) to get fresh refs before retrying. Do not retry the same ref more than once without re-snapshotting.
 
 ```bash
 # get snapshot with refs
@@ -405,7 +408,7 @@ playwright-cli close
 
 ## Example: Interactive session
 
-Ask the user for UI review or design feedback. The user draws boxes on the live page and types comments; you receive the annotated screenshot, the snapshot of the marked region, and the user's notes. Use this whenever the user asks for "UI review", "design feedback", or to "ask the user what they think / want / mean":
+Ask the user for UI review or design feedback. The user draws boxes on the live page and types comments; you receive the annotated screenshot, the snapshot of the marked region, and the user's notes. Use this when the user asks for "UI review" or "design feedback", or when the user needs to point at or mark up a region of the live page to explain what they mean. For questions that can be answered in text (URLs, credentials, which test to run), ask in chat instead:
 
 ```bash
 playwright-cli open https://example.com

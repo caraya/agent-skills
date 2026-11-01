@@ -19,7 +19,9 @@ description: "TypeScript skill for type safety, tsconfig posture, module boundar
 - Ensure public APIs expose stable, explicit types.
 
 2. Configuration posture
-- Confirm strict settings are appropriate.
+- Require `strict: true` unless the project documents a reason not to.
+- Flag missing or disabled `noUncheckedIndexedAccess` as an error unless the project documents a specific reason not to enable it.
+- Flag missing or disabled `noImplicitOverride` as an error unless the project documents a specific reason not to enable it.
 - Check moduleResolution and target compatibility.
 - Ensure path aliases do not hide bad boundaries.
 
@@ -32,6 +34,8 @@ description: "TypeScript skill for type safety, tsconfig posture, module boundar
 - Avoid over-generic abstractions without clear value.
 
 ## Output Requirements
+
+Group findings by severity first (critical, high, medium, low), then within each severity group by type (runtime crash risk first, then type-safety gaps, then maintainability). If no findings exist, state 'No issues found' and briefly confirm which checklist areas were verified.
 
 For each finding provide:
 - Location

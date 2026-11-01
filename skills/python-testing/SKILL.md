@@ -30,19 +30,32 @@ def test_add():
 Conftest snippet (fixture):
 
 ```py
+import sqlite3
 import pytest
 
 @pytest.fixture
 def db(tmp_path):
-    # setup
-    yield db_conn
-    # teardown
+    conn = sqlite3.connect(tmp_path / "test.db")
+    yield conn
+    conn.close()
 ```
 
-Coverage/issue CSV header:
+Example finding (under **Medium**):
 
-File,TestName,IssueType,SuggestedFix
-app/auth.py,test_auth_flow,Missing branch coverage,Add tests for invalid tokens and expired sessions
+- File and line: `app/auth.py:42`
+- Risk type: Coverage
+- Why it matters: Invalid tokens and expired sessions are not covered.
+- Minimal fix:
+  ```py
+  def test_invalid_token():
+      ...
+  ```
 
 Output requirements
-- For each finding provide: file and line, coverage or isolation risk, why it matters, minimal fix with code example.
+- When reviewing existing tests for coverage or isolation problems, assign each finding a severity based on the impact a defect could have if it escaped the tests:
+  - **Critical**: A gap could let a defect cause catastrophic impact, such as widespread data loss, a major security failure, or a prolonged outage.
+  - **High**: A gap could let a defect break a critical user flow or cause substantial service disruption, with no reliable safeguard.
+  - **Medium**: A gap could let a defect cause meaningful but bounded user or operational impact, or affect an important edge case.
+  - **Low**: A gap is unlikely to cause more than minor, localized impact, such as a non-critical edge case or limited test-isolation concern.
+- Group findings under severity headings in Critical, High, Medium, Low order. Include each finding's file and line, risk type (coverage or isolation), why it matters, and a minimal fix with a code example. For empty groups, write "None."
+- For setup, fixture design, or parameterization requests, respond with a short explanation followed by a complete, runnable code example; the finding format does not apply.

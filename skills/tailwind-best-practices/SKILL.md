@@ -16,6 +16,8 @@ Tailwind's utility-first approach only stays maintainable under two conditions �
 
 If either is confirmed missing, say so and stop there — recommending Tailwind fixes on top of a missing foundation just adds more chaos. If you simply don't have enough context to tell (e.g. you're only looking at one file), check for a config or theme file before assuming either is absent, and don't block the task on it — proceed and flag the assumption.
 
+Exception: if the user's request is itself to establish the missing foundation (define tokens in the config/theme, or extract repeated markup into components), proceed with that work — checks #2 and #3 still apply while doing so.
+
 ## Workflow
 
 Each check is independently actionable.
@@ -44,7 +46,7 @@ Flag unused tokens too — they don't just clutter the config; they confuse anyo
 
 ### 3. Keep class ordering consistent — automate it
 
-When writing or editing any Tailwind class list, always output the classes in the same consistent order yourself — don't leave sorting for later. Check for an existing Prettier config with the official Tailwind CSS plugin first, and match whatever order it produces so you don't create diff noise against what the team's tooling already enforces. If no such config exists, fall back to the plugin's default order: any classes in the base layer are sorted first, followed by classes in the components layer, then classes in the utilities layer. Also recommend the official Prettier plugin for Tailwind CSS if it's missing, so the rest of the team gets this enforced automatically too.
+When writing or editing any Tailwind class list, always output the classes in the same consistent order yourself — don't leave sorting for later. Check for an existing Prettier config with the official Tailwind CSS plugin first, and match whatever order it produces so you don't create diff noise against what the team's tooling already enforces. If no such config exists, fall back to the plugin's default order: base layer, then components layer, then utilities. Within utilities, order by position in Tailwind's generated CSS, not alphabetically; layout, spacing, sizing, typography, backgrounds, borders, effects, and transitions are general categories, not an exact sorting specification. Put unvarianted utilities first, then state variants (hover:, focus:, ...), then responsive variants ordered from smallest to largest breakpoint (sm:, md:, ...). Use the project's Tailwind-generated order to resolve ordering within categories and between combined variants rather than inventing a tie-breaker. Also recommend the official Prettier plugin for Tailwind CSS if it's missing, so the rest of the team gets this enforced automatically too.
 
 ### 4. Avoid `@apply` for extracting repeated styles
 
@@ -76,8 +78,8 @@ const BUTTON_VARIANTS = {
   secondary: "bg-gray-500 hover:bg-gray-600 text-white",
 };
 
-export const Button = ({ className, variant = BUTTON_VARIANTS.primary }) => (
-  <button className={clsx(className, variant)}>Test</button>
+export const Button = ({ variant = "primary" }) => (
+  <button className={BUTTON_VARIANTS[variant]}>Test</button>
 );
 ```
 

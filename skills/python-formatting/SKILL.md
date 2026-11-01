@@ -27,6 +27,7 @@ description: "Python formatting skill for Black, isort, and IDE configuration. T
 - Modern, Rust-based; superset of some Black functionality.
 - Can format and lint in one pass.
 - Install: `pip install ruff`.
+- If the project already uses Ruff or the user asks for a single-tool setup, use `ruff format` and `ruff check --select I` instead of Black/isort/flake8. Configure Ruff under `[tool.ruff]` with `line-length = 88`. Otherwise, default to Black + isort.
 
 ## Configuration
 
@@ -42,28 +43,42 @@ line_length = 88
 skip_glob = [".venv", "venv"]
 ```
 
-### `.flake8` or `pyproject.toml` (linting):
-```toml
-[tool.flake8]
+### `.flake8` (linting):
+```ini
+[flake8]
 max-line-length = 88
-exclude = [".venv", "venv", ".git"]
+extend-ignore = E203,W503
+exclude = .venv,venv,.git
 ```
+flake8 does not read `pyproject.toml` unless the `Flake8-pyproject` plugin is installed.
 
 ### VS Code `.vscode/settings.json`:
 ```json
 {
   "[python]": {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "ms-python.python",
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true
+      "source.organizeImports": "explicit"
     }
   },
-  "python.formatting.provider": "black",
-  "python.linting.enabled": true,
-  "python.linting.flake8Enabled": true
+  "isort.args": ["--profile", "black"]
 }
 ```
+
+### `.pre-commit-config.yaml`:
+```yaml
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+```
+Install with `pip install pre-commit && pre-commit install`.
 
 ## Checklist
 
@@ -75,6 +90,7 @@ exclude = [".venv", "venv", ".git"]
 2. IDE integration
 - Format-on-save is enabled in VS Code.
 - Python extension is installed and active.
+- Install the `ms-python.black-formatter`, `ms-python.isort`, and `ms-python.flake8` extensions.
 
 3. Pre-commit hooks
 - Use `pre-commit` framework with Black and isort hooks.
@@ -106,3 +122,5 @@ When setting up or validating formatting, provide:
 - IDE integration status.
 - Pre-commit hook setup summary.
 - Any conflicts or inconsistencies found.
+
+If existing configuration conflicts with these defaults, do not overwrite it silently. List each conflict, state the recommended value, and ask the user to confirm before changing `pyproject.toml` or editor settings.

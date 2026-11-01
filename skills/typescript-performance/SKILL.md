@@ -41,7 +41,7 @@ description: "TypeScript performance skill for profiling, bundle size optimizati
 
 3. Bundle and startup
 - Analyze bundle composition: what is the largest and most-imported module?
-- Check for dead code; use tree-shaking rules in tsconfig and bundler.
+- Check for dead code; ensure tsconfig emits ES modules (`"module": "esnext"` or `"es2020"`) so the bundler can tree-shake, and enable `sideEffects: false` in package.json where safe.
 - Consider code splitting and lazy loading for large features.
 
 4. Memory efficiency
@@ -55,3 +55,5 @@ For each finding provide:
 - Root cause and impact.
 - Optimization strategy with expected improvement.
 - Effort and risk assessment.
+
+If no profiling data or baseline measurements are available, do not invent numbers. Instead, state "No measurement available" and list the exact command(s) the user should run (e.g. `time tsc --noEmit`, `node --prof app.js`) to obtain the baseline before the finding can be quantified.

@@ -75,18 +75,26 @@ Follow the project design system for spacing, typography, and color tokens. For 
 When finalizing a Vue component change, run this short flow:
 
 - Start the dev server (`npm run dev`, `pnpm dev`, or equivalent).
-- Run automated accessibility checks: `npx axe-core ./path/to/page-or-static.html` and/or `npx pa11y http://localhost:3000/route`.
+- Run automated accessibility checks against the running dev server: `npx @axe-core/cli http://localhost:3000/route --save axe-report.json` and `npx pa11y http://localhost:3000/route --reporter html > pa11y-report.html`.
 - Run unit/component tests and Storybook checks (`npm test`, `npm run test:visual`).
 - Final gating: invoke the `ui-accessibility` skill and attach the generated checklist report from `references/accessibility-checklist.md`.
 
 - Agent invocation (one-liner): Invoke `ui-accessibility` attaching `axe-report.json`, `pa11y-report.html`, and `manual-checks.md` as artifacts.
+  Generate `axe-report.json` with `--save axe-report.json`, `pa11y-report.html` with `--reporter html`, and write `manual-checks.md` from the keyboard/screen-reader checks in `references/accessibility-checklist.md`. If any tool, the dev server, or the `ui-accessibility` skill is unavailable, state this explicitly in the output and list the checks that were skipped instead of claiming the gating passed.
 
 ## Output Requirements
 
-For each finding or completed build session provide:
+When reviewing existing code, group issues under severity levels in this order: Critical, High, Medium, and Low. Within each severity level, group issues by Category and omit empty groups.
+
+- **Critical** — A blocking defect that prevents a core task or creates a severe accessibility or user-impact risk.
+- **High** — A major defect that substantially blocks an important task or creates a significant accessibility barrier.
+- **Medium** — A meaningful defect that impairs a task or experience but has a reasonable workaround.
+- **Low** — A minor defect or polish issue with limited impact on task completion.
+
+Use these categories: Accessibility, state management, design system, component architecture, responsive design, and performance. For each issue, provide:
 
 - **Location** — Component name and file path.
-- **Category** — Accessibility, state management, design system, component architecture, responsive design, or performance.
-- **Severity** — Critical, Important, Suggestion.
 - **Evidence** — What was observed or what the code does currently.
 - **Fix** — Minimal corrected code example or specific action to take.
+
+When building new components, provide a single summary entry per component with Location, Category, and a short Evidence section describing what was implemented. Omit Severity and Fix unless a known issue remains; report any known issues using the severity and category grouping above.

@@ -33,7 +33,7 @@ description: "JavaScript debugging skill for runtime error diagnosis, event loop
 
 1. Async and callback issues
 - Missing `await` or `.then()` chaining silently succeeds but leaves work unfinished.
-- Unhandled promise rejections crash the process in some Node versions; catch them all.
+- Unhandled promise rejections terminate the process by default in Node 15+. Ensure every promise chain has a `.catch()` or is awaited inside try/catch; use `process.on('unhandledRejection')` only for logging, not for suppressing errors.
 - Callback arguments (error-first pattern) may be ignored, causing bugs downstream.
 
 2. Event loop and stalls
@@ -47,11 +47,20 @@ description: "JavaScript debugging skill for runtime error diagnosis, event loop
 - Look for detached DOM nodes, retained closures, or circular references.
 
 4. Module and timing issues
-- Check module loading order; require() side effects may execute unexpectedly.
+- Prioritize ESM loading order, initialization side effects, and ESM/CommonJS interoperability; check `require()` side effects when CommonJS dependencies are involved.
 - Watch for race conditions in concurrent operations (Promise.all, setTimeout timing).
-- Verify require cache is not causing stale module state.
+- For CommonJS modules, verify `require.cache` is not causing stale module state.
 
 ## Output Requirements
+
+Group findings under severity headings, ordered from highest to lowest (critical, high, medium, low).
+
+Severity criteria:
+
+- critical = crashes the process or corrupts data
+- high = incorrect results or unbounded memory/CPU growth under normal load
+- medium = degraded performance or errors only under specific conditions
+- low = code smell or risk with no observed runtime impact
 
 For each finding provide:
 - Issue description
@@ -59,3 +68,5 @@ For each finding provide:
 - Steps to reproduce with debugger
 - Root cause hypothesis
 - Fix strategy
+
+If no issues are found, state "No findings" and briefly list which checklist areas were verified.

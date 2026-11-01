@@ -27,24 +27,30 @@ description: "Go formatting skill for gofmt, goimports, and IDE configuration. T
 3. **golangci-lint** (comprehensive linting)
 - Aggregates multiple linters; catches style and logical issues.
 - Can auto-fix many issues with `--fix` flag.
-- Install: `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`.
+- Install (v2): `go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest`.
 
 ## Configuration
 
 ### `.golangci.yml` (golangci-lint):
 ```yaml
+version: "2"
 linters:
   enable:
-    - gofmt
-    - goimports
-    - vet
+    - govet
     - errcheck
     - staticcheck
     - unused
 
-linters-settings:
-  gofmt:
-    simplify: true
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: false
+    goimports:
+      local-prefixes:
+        - "<module-path>"
 ```
 
 ### VS Code `.vscode/settings.json`:
@@ -57,12 +63,14 @@ linters-settings:
     },
     "editor.defaultFormatter": "golang.go"
   },
-  "go.formatOnSave": true,
-  "go.formatTool": "goimports",
+  "gopls": {
+    "formatting.local": "<module-path>"
+  },
   "go.lintOnSave": "package",
   "go.lintTool": "golangci-lint"
 }
 ```
+If gopls is disabled (`"go.useLanguageServer": false`), use `"go.formatTool": "goimports"` with `"go.formatFlags": ["-local", "<module-path>"]` instead.
 
 ## Checklist
 
@@ -78,10 +86,24 @@ linters-settings:
 3. Pre-commit hooks
 - Use `pre-commit` framework or git hooks to run gofmt and goimports.
 - Prevents unformatted code from entering the repository.
+- For a check-only git hook, save the following as `.git/hooks/pre-commit`, replace `<module-path>` with the module path from `go.mod`, and enable it with `chmod +x .git/hooks/pre-commit`. It checks the working tree without rewriting files; if it fails, format and stage the changes before retrying the commit.
+
+```sh
+#!/bin/sh
+gofmt_files=$(gofmt -l .) || exit 1
+goimports_files=$(goimports -local '<module-path>' -l .) || exit 1
+if [ -n "$gofmt_files$goimports_files" ]; then
+  printf '%s\n' 'Format and stage these files before committing:' \
+    "$gofmt_files" "$goimports_files" >&2
+  exit 1
+fi
+exit 0
+```
 
 4. Import organization
 - goimports automatically removes unused imports.
 - Imports are grouped: stdlib, third-party, local.
+- To get a separate local group, run `goimports -local <module-path> -w .` and set `formatters.settings.goimports.local-prefixes: ["<module-path>"]` in `.golangci.yml`; in VS Code, set `"gopls": { "formatting.local": "<module-path>" }`. If gopls is disabled (`"go.useLanguageServer": false`), use `"go.formatTool": "goimports"` with `"go.formatFlags": ["-local", "<module-path>"]` instead.
 
 ## Formatting Rules
 

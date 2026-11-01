@@ -22,6 +22,7 @@ If you need to teach debugging, use pedagogy: `skills/debugging-pedagogy/SKILL.m
 - Can you trigger the issue consistently or is it intermittent?
 - What are the minimal steps to see the failure?
 - Document the environment (OS, version, configuration).
+- If the issue cannot be reproduced or key details (code, stack trace, environment) are missing, state what information is needed and proceed with the best-supported hypothesis, clearly labeling it as unconfirmed.
 
 2. Observe
 - What is the error message or symptom?

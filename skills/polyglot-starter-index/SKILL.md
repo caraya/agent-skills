@@ -22,11 +22,12 @@ description: Starter index for a creator-first polyglot setup with one general a
 
 ## Creator-First Flow
 
-1. Detect whether a real project exists.
-2. Scaffold when missing.
+1. Detect whether a project exists by checking for a language manifest (package.json, pyproject.toml, go.mod, or similar). If none is found, treat the project as missing.
+2. Scaffold when missing. Use the language explicitly requested by the user. If none is specified, infer it from the request context; if still ambiguous, default to TypeScript and state the choice in the summary.
 3. Implement requested functionality immediately.
 4. Run available checks and iterate.
-5. Summarize what was created, changed, and validated.
+5. If the change is user-facing and `ui-accessibility` exists, invoke it as a final gate.
+6. Summarize what was created, changed, and validated.
 
 ## How To Extend
 
@@ -38,18 +39,18 @@ description: Starter index for a creator-first polyglot setup with one general a
 
 ## Suggested Next Skills
 
-- react-core
-- vue-core
-- preact-core
+- react-ui
+- vue-ui
+- preact-ui
 - sql-core
 - devops-ci-core
 
-## Frontend Skills (examples)
+## Frontend Skills (required when present)
 
 - `skills/ui-engineering/SKILL.md` — Framework-agnostic UI engineering guidance (accessibility, design system, responsive).
 - `skills/react-ui/SKILL.md` — React-specific UI patterns and invocation examples.
 - `skills/preact-ui/SKILL.md` — Preact-specific UI patterns and invocation examples.
 - `skills/vue-ui/SKILL.md` — Vue-specific UI patterns and invocation examples.
-- `skills/ui-accessibility/SKILL.md` — Repository WCAG 2.1 AA enforcement skill; invoke as final gating for any user-facing change.
+- `skills/ui-accessibility/SKILL.md` — Repository WCAG 2.1 AA enforcement skill; when present, invoke as final gating for any user-facing change.
 
-Agent invocation (one-liner) for accessibility gating: invoke `ui-accessibility` attaching `axe-report.json`, `pa11y-report.html`, and `manual-checks.md` as artifacts.
+Agent invocation (one-liner) for accessibility gating: invoke `ui-accessibility` attaching `axe-report.json`, `pa11y-report.html`, and `manual-checks.md` as artifacts. If any of these artifacts cannot be generated (for example, tooling is unavailable), invoke `ui-accessibility` with the artifacts that exist, note the missing ones explicitly, and flag the accessibility check as incomplete in the final summary.

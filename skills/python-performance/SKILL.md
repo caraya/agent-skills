@@ -16,7 +16,7 @@ description: "Python performance skill for GIL analysis, profiling, and optimiza
 1. **CPU profiling**
 - `cProfile`: `python -m cProfile -s cumulative script.py` for deterministic profiling.
 - `py-spy`: Sampling profiler; attach to running process without instrumentation.
-- `pyflame`: Statistical profiler; good for production use.
+- `scalene`: Sampling CPU/memory/GPU profiler with low overhead; suitable for production-like runs.
 
 2. **Memory profiling**
 - `memory_profiler`: Line-by-line memory with `@profile` decorator.
@@ -24,7 +24,7 @@ description: "Python performance skill for GIL analysis, profiling, and optimiza
 - `tracemalloc`: Built-in; track allocations over time.
 
 3. **Async and I/O analysis**
-- `asyncio` debug mode: Set `asyncio.run(..., debug=True)` or `PYTHONASYNCDEBUG=1`.
+- `asyncio` debug mode: Set `asyncio.run(..., debug=True)` or `PYTHONASYNCIODEBUG=1`.
 - `py-spy` with `--idle`: See where time is spent (I/O wait vs. CPU).
 
 ## Checklist
@@ -53,6 +53,7 @@ description: "Python performance skill for GIL analysis, profiling, and optimiza
 
 For each finding provide:
 - Measurement (baseline throughput, latency, memory).
+  - If no profiling data or runtime access is available, state "Measurement: not available (static analysis)" and instead provide the exact command(s) the user should run to obtain it. Never invent numbers.
 - Profiling evidence (call graph, timeline, memory snapshot).
 - Root cause (GIL, algorithm, I/O, import, memory).
 - Optimization strategy and expected improvement.

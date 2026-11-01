@@ -32,8 +32,12 @@ description: "JavaScript skill for runtime correctness, async behavior, module c
 
 ## Output Requirements
 
+Group findings under severity headings, ordered from highest to lowest (critical, high, medium, low).
+
 For each finding provide:
 - Location
 - Failure mode
 - User impact
 - Minimal fix
+
+If no issues are found, state "No findings" and briefly list which checklist areas were verified.

@@ -44,7 +44,7 @@ src/components/
     <CardTitle>Tasks</CardTitle>
   </CardHeader>
   <CardBody>
-    <TaskList tasks={tasks} />
+    <TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} />
   </CardBody>
 </Card>
 
@@ -53,8 +53,8 @@ src/components/
   title="Tasks"
   headerVariant="large"
   bodyPadding="md"
-  content={<TaskList tasks={tasks} />}
-/
+  content={<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} />}
+/>
 ```
 
 **Keep components focused:**
@@ -78,21 +78,21 @@ export function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
 
 ```tsx
 // Container: handles data
-export function TaskListContainer() {
-  const { tasks, isLoading, error } = useTasks();
+export function TaskListContainer({ onToggle, onDelete }: Pick<TaskItemProps, 'onToggle' | 'onDelete'>) {
+  const { tasks, isLoading, error, refetch } = useTasks();
 
   if (isLoading) return <TaskListSkeleton />;
   if (error) return <ErrorState message="Failed to load tasks" retry={refetch} />;
   if (tasks.length === 0) return <EmptyState message="No tasks yet" />;
 
-  return <TaskList tasks={tasks} />;
+  return <TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} />;
 }
 
 // Presentation: handles rendering
-export function TaskList({ tasks }: { tasks: Task[] }) {
+export function TaskList({ tasks, onToggle, onDelete }: { tasks: Task[] } & Pick<TaskItemProps, 'onToggle' | 'onDelete'>) {
   return (
     <ul role="list" className="divide-y">
-      {tasks.map(task => <TaskItem key={task.id} task={task} />)}
+      {tasks.map(task => <TaskItem key={task.id} task={task} onToggle={onToggle} onDelete={onDelete} />)}
     </ul>
   );
 }
@@ -114,6 +114,8 @@ Global store (Zustand, Redux)    → Complex client state shared app-wide
 **Avoid prop drilling deeper than 3 levels.** If you're passing props through components that don't use them, introduce context or restructure the component tree.
 
 ## Design System Adherence
+
+Before styling, locate the project's design tokens (e.g., `tailwind.config.*`, `theme.ts`, CSS variables). If none exist or can be found, ask the user for palette, spacing, and radius preferences. If no answer is available, use a neutral gray palette, the Tailwind default 4px spacing scale, and a single border-radius (`rounded-md`) applied consistently, and state these assumptions in your response.
 
 ### Avoid the AI Aesthetic
 
@@ -162,6 +164,8 @@ Every component must meet these standards:
 
 For final WCAG 2.1 AA gating and verification, invoke the `ui-accessibility` skill and apply checks from `references/accessibility-checklist.md`.
 
+If the `ui-accessibility` skill or `references/accessibility-checklist.md` is unavailable, state this explicitly and perform a manual WCAG 2.1 AA review (keyboard access, focus visibility, labels/ARIA, text color contrast of at least 4.5:1, and heading order) instead. If the dev server or axe/pa11y commands fail or are not installed, report the error and continue with the manual review; do not claim automated checks passed.
+
 ### Keyboard Navigation
 
 ```tsx
@@ -179,8 +183,6 @@ For final WCAG 2.1 AA gating and verification, invoke the `ui-accessibility` ski
 When finalizing a React component change, run this short flow:
 
 - Start the dev server (`npm start`, `pnpm dev`, or equivalent).
-- Run automated accessibility checks: `npx axe-core ./path/to/page-or-story.html` and/or `npx pa11y http://localhost:3000/route`.
+- Run automated accessibility checks against the running route: `npx @axe-core/cli http://localhost:3000/route --save axe-report.json` and/or `npx pa11y http://localhost:3000/route --reporter html > pa11y-report.html`.
 - Run component/unit tests and Storybook visual checks where available (`npm test`, `npm run test:visual`).
-- Final gating: invoke the `ui-accessibility` skill and attach the generated checklist report from `references/accessibility-checklist.md`.
-
-- Agent invocation (one-liner): Invoke `ui-accessibility` attaching `axe-report.json`, `pa11y-report.html`, and `manual-checks.md` as artifacts.
+- Final gating: invoke the `ui-accessibility` skill if available and record the manual review results in `manual-checks.md`, using `references/accessibility-checklist.md` when available or the fallback checks above. Include checks performed, findings, and any unavailable or failed automated checks. Attach this report and only the automated reports actually generated (`axe-report.json` and/or `pa11y-report.html`); do not fabricate artifact paths or treat empty or failed-command output as a passing report.

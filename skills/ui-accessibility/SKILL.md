@@ -15,6 +15,7 @@ This skill is framework-agnostic and language-agnostic. Use it for any project t
 
 - Primary checklist: `references/accessibility-checklist.md`
 - Treat that file as authoritative for required checks and anti-patterns.
+- If `references/accessibility-checklist.md` cannot be found or read, state this in the Validation section and fall back to the categories listed under Required WCAG Coverage below. If the file and this document disagree, the file wins.
 
 ## Use When
 
@@ -73,13 +74,17 @@ Use both automated and manual testing:
 
 When scaffolding a frontend project, include accessibility tooling as devDependencies so checks are reproducible and runnable in CI. Example template is available at `templates/frontend/package.json`.
 
+For non-Node stacks (Python, Go, Rust, etc.), do not add a `package.json`. Instead run `npx @axe-core/cli` and `npx pa11y` via a Node step in CI against the served URL, or use a stack-native alternative (e.g. Playwright + axe) and still emit `axe-report.json` and `pa11y-report.html` (or document the substitute file names in `manual-checks.md`).
+
 Install locally:
 
 ```bash
-npm install --save-dev @axe-core/cli pa11y pa11y-ci
+npm install --save-dev @axe-core/cli pa11y pa11y-ci wait-on
 ```
 
 Add these scripts to `package.json` (the template includes them):
+
+Replace `http://localhost:3000/route` with the project's actual dev-server port and the route(s) in scope; scan every route touched by the change. Use the same actual dev-server port for the CI readiness URL below.
 
 ```json
 {
@@ -100,7 +105,7 @@ Run accessibility checks in CI and upload artifacts so the agent can attach them
     run: npm ci
 
 - name: Start dev server
-    run: npm start &
+    run: npm start & npx wait-on http://localhost:3000
 
 - name: Run accessibility checks
     run: npm run a11y:run
@@ -121,9 +126,9 @@ Agents will expect artifacts named `axe-report.json` and `pa11y-report.html` (an
 For each accessibility review or implementation pass, provide:
 
 - **Scope** — Components/pages evaluated.
-- **Checklist status** — Pass/fail per checklist section (Keyboard, Screen readers, Visual, Forms, Content).
+- **Checklist status** — Pass / Fail / N/A per checklist section (Keyboard, Screen readers, Visual, Forms, Content). Use N/A only when the section has no applicable elements in scope, and state why.
 - **Findings** — Critical, Important, Suggestions with evidence.
 - **Fixes** — Minimal code changes or concrete remediation steps.
 - **Validation** — Which tools/tests were run and what remains unverified.
 
-If any WCAG-critical issue remains unresolved, explicitly mark release risk.
+If any finding rated **Critical** (defined as: blocks keyboard or screen-reader users from completing a core task, or fails a WCAG 2.1 Level A/AA success criterion) remains unresolved, add a final line `RELEASE RISK: <criterion> – <summary>`.
