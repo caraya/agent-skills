@@ -1,0 +1,17 @@
+.slide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 2rem;
+  align-items: start;
+}
+
+.col {
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .slide-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+}
