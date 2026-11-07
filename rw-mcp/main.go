@@ -78,7 +78,7 @@ func fetchRemoteContent(ctx context.Context, url string) (string, error) {
 
 // Helper to build the prompt from remote sources
 func buildAgentPrompt(ctx context.Context) (string, error) {
-	baseAgentURL := "https://raw.githubusercontent.com/caraya/agent-skills/main/agents/content-editor/agent.md"
+	baseAgentURL := "https://raw.githubusercontent.com/caraya/agent-skills/coding/agents/content-editor/agent.md"
 	skillURLs := []string{
 		"https://raw.githubusercontent.com/caraya/agent-skills/main/skills/markdown-formatting/skill.md",
 		"https://raw.githubusercontent.com/caraya/agent-skills/main/skills/grammar-correction/skill.md",
