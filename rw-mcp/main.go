@@ -104,6 +104,24 @@ func buildAgentPrompt(ctx context.Context) (string, error) {
 	return fullPrompt.String(), nil
 }
 
+func calculate(operation string, a, b float64) (float64, error) {
+	switch operation {
+	case "add":
+		return a + b, nil
+	case "subtract":
+		return a - b, nil
+	case "multiply":
+		return a * b, nil
+	case "divide":
+		if b == 0 {
+			return 0, fmt.Errorf("cannot divide by zero")
+		}
+		return a / b, nil
+	default:
+		return 0, nil
+	}
+}
+
 func main() {
 	s := server.NewMCPServer("MyGoServer", "1.0.0", server.WithToolCapabilities(false))
 
@@ -120,14 +138,9 @@ func main() {
 		a, _ := request.RequireFloat("a")
 		b, _ := request.RequireFloat("b")
 
-		var result float64
-		switch op {
-		case "add": result = a + b
-		case "subtract": result = a - b
-		case "multiply": result = a * b
-		case "divide":
-			if b == 0 { return mcp.NewToolResultError("cannot divide by zero"), nil }
-			result = a / b
+		result, err := calculate(op, a, b)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
 		}
 		return mcp.NewToolResultText(fmt.Sprintf("%f", result)), nil
 	})
