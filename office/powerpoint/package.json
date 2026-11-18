@@ -1,0 +1,25 @@
+{
+  "name": "@agent-skills/powerpoint",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "image-size": "^2.1.0",
+    "marked": "^18.2.1",
+    "pptxgenjs": "^4.0.1",
+    "prismjs": "^1.30.0"
+  },
+  "devDependencies": {
+    "jszip": "^3.10.1"
+  },
+  "overrides": {
+    "pptxgenjs": {
+      "image-size": "$image-size"
+    }
+  }
+}

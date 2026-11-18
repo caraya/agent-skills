@@ -1,0 +1,20 @@
+{
+  "name": "@agent-skills/pdf",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
+    "@resvg/resvg-js": "^2.6.2",
+    "jsdom": "^27.2.0",
+    "mermaid": "^11.17.2",
+    "pdf-lib": "^1.17.1",
+    "prismjs": "^1.30.0",
+    "svgdom": "^0.1.22"
+  }
+}

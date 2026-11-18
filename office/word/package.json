@@ -1,0 +1,28 @@
+{
+  "name": "@agent-skills/word",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "docx": "^9.5.1",
+    "image-size": "^2.1.0",
+    "jsdom": "^27.2.0",
+    "marked": "^18.2.1",
+    "mermaid": "^11.17.2",
+    "svgdom": "^0.1.22"
+  },
+  "devDependencies": {
+    "jszip": "^3.10.1"
+  },
+  "overrides": {
+    "mermaid": {
+      "katex": "^0.19.1"
+    }
+  }
+}

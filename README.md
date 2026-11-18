@@ -2,6 +2,11 @@
 
 This repository uses npm workspaces for the `coding` and `instructional-design`
 packages. The `rw-mcp` Go module and the frontend template are independent.
+The [PDF](office/pdf/SKILL.md), [Word](office/word/SKILL.md), and
+[PowerPoint](office/powerpoint/SKILL.md) skills are standalone packages with
+their own dependencies. Install them once with
+`npm ci --prefix office/pdf`, `npm ci --prefix office/word`, and
+`npm ci --prefix office/powerpoint`.
 
 Install workspace dependencies from the root:
 
@@ -83,14 +88,8 @@ mkdir -p "$HOME/.copilot/agents"
 curl -fsSL https://raw.githubusercontent.com/caraya/agent-skills/main/coding/agents/content-editor/agent.md -o "$HOME/.copilot/agents/content-editor.agent.md"
 ```
 
-In VS Code, select the Copilot harness to use agents from this directory. The
-Local harness uses VS Code profile storage instead. For the default VS Code
-profile on macOS, download an `.agent.md` file to
-`~/Library/Application Support/Code/User/prompts/`; other profiles and platforms
-use their respective profile locations.
+In VS Code, select the Copilot harness to use agents from this directory.
 
-Repeat the corresponding download to update an agent. These commands overwrite
-existing files with the same name.
+Repeat the corresponding download to update an agent. These commands overwrite existing files with the same name.
 
-Install any skills referenced by an agent separately. Some agents contain links
-to repository files; those links may need adjustment in the downloaded copy.
+Install any skills referenced by an agent separately. Some agents contain links to repository files; those links may need adjustment in the downloaded copy.
