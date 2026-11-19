@@ -27,14 +27,25 @@ configured in each tool rather than maintained through duplicated prompt files.
 
 ## Core conventions
 
-- Implement first. `polyglot-engineering` defaults to implementation; switch to
-  review mode only when explicitly requested.
+- Implement first. `polyglot-engineering` defaults to implementation; switch to review mode only when explicitly requested.
 - Format last, using the relevant language skill.
 - Ask for guidance when blocked instead of guessing.
-- Do not auto-chain content workflows. `content-ideation` and `content-editor`
-  are independent stages; the human chooses when to run each.
-- Keep orchestration agents language-agnostic and put language-specific depth in
-  skills.
+- Do not auto-chain content workflows. `content-ideation` and `content-editor` are independent stages; the human chooses when to run each.
+- Keep orchestration agents language-agnostic and put language-specific depth in skills.
+
+## Monorepo workspaces
+
+The root `package.json` defines the `coding`, `instructional-design`, and
+experimental office workspaces (`office/pdf`, `office/word`, and
+`office/powerpoint`). Install dependencies from the repository root with
+`npm install`; use `npm run <script> --workspace=<path>` to run a workspace
+script. Keep coding agents and skills in this package's canonical directories;
+the office skills remain in their separate workspace directories.
+
+The root `package-lock.json` records the monorepo installation. Keep the
+individual office lockfiles for standalone installs, and repeat any office
+dependency overrides in the root manifest because npm ignores workspace-level
+overrides.
 
 ## Claude Code
 
@@ -43,9 +54,7 @@ registers the skill directory and each agent prompt because agents are stored in
 per-agent subdirectories. Keep manifest paths relative to the repository root.
 The plugin can be loaded locally with `claude --plugin-dir .`.
 
-Do not add API endpoint definitions to `plugin.json`. Claude Code plugin commands
-are Markdown files, not HTTP handlers; this repository does not include a handler
-server.
+Do not add API endpoint definitions to `plugin.json`. Claude Code plugin commands are Markdown files, not HTTP handlers; this repository does not include a handler server.
 
 ## VS Code
 

@@ -1,12 +1,10 @@
 # Agent Skills Monorepo
 
 This repository uses npm workspaces for the `coding` and `instructional-design`
-packages. The `rw-mcp` Go module and the frontend template are independent.
-The [PDF](office/pdf/SKILL.md), [Word](office/word/SKILL.md), and
-[PowerPoint](office/powerpoint/SKILL.md) skills are standalone packages with
-their own dependencies. Install them once with
-`npm ci --prefix office/pdf`, `npm ci --prefix office/word`, and
-`npm ci --prefix office/powerpoint`.
+packages and for the experimental [PDF](office/pdf/SKILL.md),
+[Word](office/word/SKILL.md), and [PowerPoint](office/powerpoint/SKILL.md)
+skills in `office/`. The `rw-mcp` Go module and the frontend template are
+independent.
 
 Install workspace dependencies from the root:
 
@@ -14,12 +12,19 @@ Install workspace dependencies from the root:
 npm install
 ```
 
-Run a package script from the root with `npm run <script> --workspace=coding`
-or `npm run <script> --workspace=instructional-design`. Use `--workspaces` to
-run a script in every workspace.
+Run a package script from the root with `npm run <script> --workspace=<path>`,
+for example `--workspace=coding` or `--workspace=office/pdf`. Use
+`--workspaces` to run a script in every workspace. To test the office skills:
+
+```sh
+npm test --workspace=office/pdf --workspace=office/word --workspace=office/powerpoint
+```
 
 The root `package-lock.json` records the monorepo installation; the existing
-package lockfiles support independent installations of those packages.
+package lockfiles support independent installations of those packages. npm
+applies `overrides` only from the root manifest, so the office skills'
+dependency overrides are repeated in the root `package.json`. Keep both
+copies in sync when changing them.
 
 ## Install skills
 
@@ -29,6 +34,9 @@ local package:
 ```sh
 npx skills add /path/to/agent-skills/coding/skills --list
 npx skills add /path/to/agent-skills/instructional-design/skills --list
+npx skills add /path/to/agent-skills/office/pdf --list
+npx skills add /path/to/agent-skills/office/word --list
+npx skills add /path/to/agent-skills/office/powerpoint --list
 ```
 
 Replace `/path/to/agent-skills` with the path to your checkout. Remove `--list`
@@ -40,11 +48,17 @@ You can also install from either package's skills directory on GitHub:
 ```sh
 npx skills add https://github.com/caraya/agent-skills/tree/main/coding/skills
 npx skills add https://github.com/caraya/agent-skills/tree/main/instructional-design/skills
+npx skills add https://github.com/caraya/agent-skills/tree/main/office/pdf
+npx skills add https://github.com/caraya/agent-skills/tree/main/office/word
+npx skills add https://github.com/caraya/agent-skills/tree/main/office/powerpoint
 ```
 
 Some skill names occur in both packages. When discovering both packages together,
 the CLI keeps only the first matching name, so use a package-specific path to
-select the intended version.
+select the intended version. The experimental office skills are installed
+individually from their package directories. An installed office skill outside
+this repository needs its own dependencies; run `npm ci --prefix
+/path/to/installed/skill` once.
 
 The `skills` CLI installs skills into supported coding agents; it does not install
 the agent definitions in this repository. See the [skills CLI reference](https://github.com/vercel-labs/skills/blob/main/docs/commands.md)

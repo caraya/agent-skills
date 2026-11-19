@@ -3,6 +3,17 @@
   "private": true,
   "workspaces": [
     "coding",
-    "instructional-design"
-  ]
+    "instructional-design",
+    "office/pdf",
+    "office/word",
+    "office/powerpoint"
+  ],
+  "overrides": {
+    "mermaid": {
+      "katex": "^0.19.1"
+    },
+    "pptxgenjs": {
+      "image-size": "^2.1.0"
+    }
+  }
 }

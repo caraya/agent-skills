@@ -5,12 +5,15 @@ bundled Node.js CLI; Microsoft Word is not required.
 
 ## Requirements
 
-Install Node.js 22 or later and npm. From the repository root, install the
-skill's dependencies once:
+Install Node.js 22 or later and npm. In this repository, the skill is an npm
+workspace; install its dependencies from the repository root:
 
 ```sh
-npm ci --prefix office/word
+npm install
 ```
+
+For an installed copy outside this repository, run
+`npm ci --prefix /path/to/word` once instead.
 
 After installation, document generation does not require network access.
 
@@ -62,8 +65,9 @@ translating it into Word content and rejects it.
 
 ## Tests
 
-Run the converter tests from the skill directory:
+Run the converter tests from the skill directory with `npm test`, or from the
+repository root:
 
 ```sh
-npm test
+npm test --workspace=office/word
 ```
