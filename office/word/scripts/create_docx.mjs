@@ -113,17 +113,19 @@ async function markdownImage(token, sourceDirectory) {
   });
 }
 
-async function inlineRuns(tokens, style = {}, sourceDirectory) {
+async function inlineRuns(tokens, style = {}, sourceDirectory, codeStyle) {
   const runs = [];
   for (const token of tokens) {
     if (token.type === 'strong') {
-      runs.push(...await inlineRuns(token.tokens, { ...style, bold: true }, sourceDirectory));
+      runs.push(...await inlineRuns(token.tokens, { ...style, bold: true }, sourceDirectory, codeStyle));
     } else if (token.type === 'em') {
-      runs.push(...await inlineRuns(token.tokens, { ...style, italics: true }, sourceDirectory));
+      runs.push(...await inlineRuns(token.tokens, { ...style, italics: true }, sourceDirectory, codeStyle));
     } else if (token.type === 'del') {
-      runs.push(...await inlineRuns(token.tokens, { ...style, strike: true }, sourceDirectory));
+      runs.push(...await inlineRuns(token.tokens, { ...style, strike: true }, sourceDirectory, codeStyle));
     } else if (token.type === 'codespan') {
-      runs.push(new TextRun({ text: token.text, ...style, font: 'Consolas' }));
+      runs.push(new TextRun({
+        text: token.text, ...style, ...(codeStyle ? { style: codeStyle } : { font: 'Consolas' })
+      }));
     } else if (token.type === 'br') {
       runs.push(new TextRun({ text: '\n', ...style }));
     } else if (token.type === 'link') {
@@ -132,12 +134,12 @@ async function inlineRuns(tokens, style = {}, sourceDirectory) {
       }
       runs.push(new ExternalHyperlink({
         link: token.href,
-        children: await inlineRuns(token.tokens, { ...style, underline: {} }, sourceDirectory)
+        children: await inlineRuns(token.tokens, { ...style, underline: {} }, sourceDirectory, codeStyle)
       }));
     } else if (token.type === 'image') {
       runs.push(await markdownImage(token, sourceDirectory));
     } else if (token.type === 'text' && token.tokens) {
-      runs.push(...await inlineRuns(token.tokens, style, sourceDirectory));
+      runs.push(...await inlineRuns(token.tokens, style, sourceDirectory, codeStyle));
     } else if (token.type === 'text' || token.type === 'escape') {
       runs.push(new TextRun({ text: token.text, ...style }));
     } else {
@@ -162,7 +164,7 @@ function parseSource(source) {
   return { content: source.slice(frontmatter[0].length), title };
 }
 
-async function markdownContent(markdown, sourceDirectory, title) {
+async function markdownContent(markdown, sourceDirectory, title, codeStyle) {
   const paragraphs = [];
   const numberingConfig = [];
   let orderedListNumber = 0;
@@ -190,7 +192,7 @@ async function markdownContent(markdown, sourceDirectory, title) {
         if (itemToken.type === 'list') {
           await appendList(itemToken, depth + 1);
         } else if (itemToken.type === 'paragraph' || itemToken.type === 'text') {
-          const children = await inlineRuns(itemToken.tokens, {}, sourceDirectory);
+          const children = await inlineRuns(itemToken.tokens, {}, sourceDirectory, codeStyle);
           if (item.task) {
             children.unshift(new TextRun({ text: item.checked ? '[x] ' : '[ ] ' }));
           }
@@ -215,12 +217,12 @@ async function markdownContent(markdown, sourceDirectory, title) {
         paragraphs.push(new Paragraph({
           heading: headingLevels[token.depth - 1],
           indent: quote ? { left: 720 } : undefined,
-          children: await inlineRuns(token.tokens, {}, sourceDirectory)
+          children: await inlineRuns(token.tokens, {}, sourceDirectory, codeStyle)
         }));
       } else if (token.type === 'paragraph' || token.type === 'text') {
         paragraphs.push(new Paragraph({
           indent: quote ? { left: 720 } : undefined,
-          children: await inlineRuns(token.tokens, {}, sourceDirectory)
+          children: await inlineRuns(token.tokens, {}, sourceDirectory, codeStyle)
         }));
       } else if (token.type === 'blockquote') {
         await appendTokens(token.tokens, true);
@@ -235,7 +237,7 @@ async function markdownContent(markdown, sourceDirectory, title) {
               width: { size: Math.floor(9360 / row.length), type: WidthType.DXA },
               shading: rowIndex === 0 ? { fill: 'E8EEF4' } : undefined,
               children: [new Paragraph({
-                children: await inlineRuns(cell.tokens, {}, sourceDirectory)
+                children: await inlineRuns(cell.tokens, {}, sourceDirectory, codeStyle)
               })]
             }));
           }
@@ -272,7 +274,9 @@ async function markdownContent(markdown, sourceDirectory, title) {
       } else if (token.type === 'code') {
         for (const line of token.text.split('\n')) {
           paragraphs.push(new Paragraph({
-            children: [new TextRun({ text: line, font: 'Consolas' })],
+            children: [new TextRun({
+              text: line, ...(codeStyle ? { style: codeStyle } : { font: 'Consolas' })
+            })],
             indent: { left: 360 },
             spacing: { after: 0 }
           }));
@@ -324,9 +328,17 @@ async function readTemplate(templatePath) {
 
   let markerCount = 0;
   let validMarker = false;
+  let codeStyle;
   for (const part of zip.file(/^word\/.*\.xml$/)) {
     const dom = new JSDOM(await part.async('string'), { contentType: 'application/xml' });
     try {
+      if (part.name === 'word/styles.xml' &&
+        [...dom.window.document.getElementsByTagNameNS(WORD_NAMESPACE, 'style')].some((style) =>
+          style.getAttributeNS(WORD_NAMESPACE, 'styleId') === 'Code' &&
+          style.getAttributeNS(WORD_NAMESPACE, 'type') === 'character'
+        )) {
+        codeStyle = 'Code';
+      }
       if (part.name === 'word/document.xml' &&
         dom.window.document.documentElement.tagName !== 'w:document') {
         throw new Error('The template main document must use the standard w:document namespace prefix.');
@@ -365,7 +377,7 @@ async function readTemplate(templatePath) {
       'with plain text runs only and no section break, fields, images, or other content in that paragraph.'
     );
   }
-  return bytes;
+  return { bytes, codeStyle };
 }
 
 export async function createDocx({ input, output, template }) {
@@ -376,14 +388,16 @@ export async function createDocx({ input, output, template }) {
     throw new Error('The source file must have a .md extension.');
   }
   const outputPath = path.resolve(output ?? inputPath.replace(/\.md$/i, '.docx'));
-  const templateBytes = template ? await readTemplate(path.resolve(template)) : null;
+  const templateData = template ? await readTemplate(path.resolve(template)) : null;
   const markdown = await readFile(inputPath, 'utf8');
   const { content, title } = parseSource(markdown);
-  const { paragraphs, numberingConfig } = await markdownContent(content, path.dirname(inputPath), title);
-  const buffer = templateBytes
+  const { paragraphs, numberingConfig } = await markdownContent(
+    content, path.dirname(inputPath), title, templateData?.codeStyle
+  );
+  const buffer = templateData
     ? await patchDocument({
       outputType: 'nodebuffer',
-      data: templateBytes,
+      data: templateData.bytes,
       patches: { content: { type: PatchType.DOCUMENT, children: paragraphs } },
       numbering: { config: numberingConfig }
     })

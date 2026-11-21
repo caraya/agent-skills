@@ -59,9 +59,10 @@ the output path; on failure, it prints an error and exits with a nonzero status.
 The bundled [starter template](templates/starter.docx) provides a minimal
 Letter-size report layout with 1-inch margins, Google Sans at 12 pt for body
 text, headings at 20, 16, 14, 13, 12, and 12 pt, and a centered 10 pt
-"Page X of Y" footer. Its regular, bold, italic, and bold-italic Google Sans
-faces are embedded in full, not subsetted. A viewer that supports Word font
-embedding can use them without a local Google Sans installation.
+"Page X of Y" footer. It also uses Ubuntu Mono for inline and fenced code.
+Regular, bold, italic, and bold-italic faces of both families are embedded
+in full, not subsetted. A viewer that supports Word font embedding can use
+them without local font installations.
 
 The embedded static faces were derived from the supplied variable fonts in
 [the sibling fonts directory](../fonts/) at weights 400 and 700, with optical
@@ -69,6 +70,15 @@ size 18 and grade 0. The originals are unchanged and licensed under the
 [SIL Open Font License](../fonts/OFL.txt). The template is self-contained;
 its source font files are not needed when generating a document from it.
 Template conversion preserves the embedded font files and their relationships.
+Ubuntu Mono comes from the supplied fonts in the same directory, under the
+[Ubuntu Font Licence 1.0](templates/UbuntuMono-LICENSE.txt). Its font files are
+embedded unchanged, and the license is included inside the DOCX package.
+
+The template's `Code` character style selects Ubuntu Mono. The converter uses
+that style for inline and fenced code whenever a template defines it.
+Documents without a template, or using a template without that character
+style, retain the existing Consolas code font. The Word converter does not
+use Prism or syntax-highlight fenced code.
 
 From the skill directory, use it with:
 

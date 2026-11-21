@@ -19,7 +19,7 @@ function readXml(xml) {
   return new JSDOM(xml, { contentType: 'application/xml' }).window.document;
 }
 
-test('starter template embeds every Google Sans face and retains the fonts in generated documents', async (t) => {
+test('starter template embeds body and code fonts and retains them in generated documents', async (t) => {
   const directory = await mkdtemp(path.join(tmpdir(), 'markdown-word-embedded-fonts-test-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const template = path.resolve(import.meta.dirname, '../templates/starter.docx');
@@ -28,42 +28,47 @@ test('starter template embeds every Google Sans face and retains the fonts in ge
   const originalBytes = await readFile(template);
   const original = await JSZip.loadAsync(originalBytes);
   const fontTable = readXml(await original.file('word/fontTable.xml').async('string'));
-  const font = [...fontTable.getElementsByTagNameNS(wordNamespace, 'font')]
-    .find((entry) => entry.getAttributeNS(wordNamespace, 'name') === 'Google Sans');
-  assert.ok(font, 'Google Sans must have an embedded font-table entry');
   const relationshipNamespace = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
   const relationships = readXml(await original.file('word/_rels/fontTable.xml.rels').async('string'));
   const embeddedParts = [];
-  for (const [face, weight, italic] of [
-    ['Regular', 400, false], ['Bold', 700, false], ['Italic', 400, true], ['BoldItalic', 700, true]
-  ]) {
-    const entry = font.getElementsByTagNameNS(wordNamespace, `embed${face}`)[0];
-    assert.ok(entry, `missing embedded ${face} face`);
-    const id = entry.getAttributeNS(relationshipNamespace, 'id');
-    const relationship = [...relationships.documentElement.children]
-      .find((node) => node.getAttribute('Id') === id);
-    assert.ok(relationship, `missing font relationship ${id}`);
-    const part = path.posix.join('word', relationship.getAttribute('Target'));
-    embeddedParts.push(part);
-    const data = await original.file(part).async('nodebuffer');
-    const decoded = Buffer.from(data);
-    const key = Buffer.from(entry.getAttributeNS(wordNamespace, 'fontKey').replace(/[{}-]/g, ''), 'hex').reverse();
-    for (let index = 0; index < 32; index += 1) decoded[index] ^= key[index % 16];
-    assert.equal(decoded.readUInt32BE(0), 0x00010000, 'embedded data must decode to a TrueType font');
-    const tables = new Map();
-    for (let index = 0; index < decoded.readUInt16BE(4); index += 1) {
-      const offset = 12 + index * 16;
-      tables.set(decoded.toString('ascii', offset, offset + 4), decoded.readUInt32BE(offset + 8));
+  for (const family of ['Google Sans', 'Ubuntu Mono']) {
+    const font = [...fontTable.getElementsByTagNameNS(wordNamespace, 'font')]
+      .find((entry) => entry.getAttributeNS(wordNamespace, 'name') === family);
+    assert.ok(font, `${family} must have an embedded font-table entry`);
+    for (const [face, weight, italic] of [
+      ['Regular', 400, false], ['Bold', 700, false], ['Italic', 400, true], ['BoldItalic', 700, true]
+    ]) {
+      const entry = font.getElementsByTagNameNS(wordNamespace, `embed${face}`)[0];
+      assert.ok(entry, `missing embedded ${family} ${face} face`);
+      const id = entry.getAttributeNS(relationshipNamespace, 'id');
+      const relationship = [...relationships.documentElement.children]
+        .find((node) => node.getAttribute('Id') === id);
+      assert.ok(relationship, `missing font relationship ${id}`);
+      const part = path.posix.join('word', relationship.getAttribute('Target'));
+      embeddedParts.push(part);
+      const data = await original.file(part).async('nodebuffer');
+      const decoded = Buffer.from(data);
+      const key = Buffer.from(entry.getAttributeNS(wordNamespace, 'fontKey').replace(/[{}-]/g, ''), 'hex').reverse();
+      for (let index = 0; index < 32; index += 1) decoded[index] ^= key[index % 16];
+      assert.equal(decoded.readUInt32BE(0), 0x00010000, 'embedded data must decode to a TrueType font');
+      const tables = new Map();
+      for (let index = 0; index < decoded.readUInt16BE(4); index += 1) {
+        const offset = 12 + index * 16;
+        tables.set(decoded.toString('ascii', offset, offset + 4), decoded.readUInt32BE(offset + 8));
+      }
+      assert.equal(tables.has('fvar'), false, 'use static faces for Word font embedding');
+      assert.ok(tables.has('OS/2'));
+      const os2 = tables.get('OS/2');
+      assert.equal(decoded.readUInt16BE(os2 + 4), weight);
+      assert.equal((decoded.readUInt16BE(os2 + 62) & 1) === 1, italic);
     }
-    assert.equal(tables.has('fvar'), false, 'use static faces for Word font embedding');
-    assert.ok(tables.has('OS/2'));
-    const os2 = tables.get('OS/2');
-    assert.equal(decoded.readUInt16BE(os2 + 4), weight);
-    assert.equal((decoded.readUInt16BE(os2 + 62) & 1) === 1, italic);
   }
+  assert.equal(new Set(embeddedParts).size, 8);
   const settings = readXml(await original.file('word/settings.xml').async('string'));
   assert.equal(settings.getElementsByTagNameNS(wordNamespace, 'embedTrueTypeFonts').length, 1);
-  await writeFile(input, '---\ntitle: Embedded report\n---\n\n**Bold**, *italic*, and ***both***.\n');
+  await writeFile(input,
+    '---\ntitle: Embedded report\n---\n\n**Bold**, *italic*, and ***both***.\n\n' +
+    '***`const inline = true`***\n\n```js\nconst answer = 42;\n```\n');
   await createDocx({ input, output, template });
   const generated = await JSZip.loadAsync(await readFile(output));
   for (const part of embeddedParts) {
@@ -73,6 +78,10 @@ test('starter template embeds every Google Sans face and retains the fonts in ge
   const generatedRelationships = readXml(await generated.file('word/_rels/fontTable.xml.rels').async('string'));
   assert.equal(generatedFontTable.documentElement.innerHTML, fontTable.documentElement.innerHTML);
   assert.equal(generatedRelationships.documentElement.innerHTML, relationships.documentElement.innerHTML);
+  const licensePart = 'word/fonts/UbuntuMono-LICENSE.txt';
+  assert.deepEqual(
+    await generated.file(licensePart).async('nodebuffer'), await original.file(licensePart).async('nodebuffer')
+  );
   const generatedSettings = readXml(await generated.file('word/settings.xml').async('string'));
   assert.equal(generatedSettings.getElementsByTagNameNS(wordNamespace, 'embedTrueTypeFonts').length, 1);
   const document = readXml(await generated.file('word/document.xml').async('string'));
@@ -82,6 +91,29 @@ test('starter template embeds every Google Sans face and retains the fonts in ge
     firstParagraph.getElementsByTagNameNS(wordNamespace, 'pStyle')[0].getAttributeNS(wordNamespace, 'val'),
     'Heading1'
   );
+  const styles = readXml(await generated.file('word/styles.xml').async('string'));
+  const codeStyle = [...styles.getElementsByTagNameNS(wordNamespace, 'style')]
+    .find((entry) => entry.getAttributeNS(wordNamespace, 'styleId') === 'Code');
+  assert.ok(codeStyle, 'the template must define a Code character style');
+  assert.equal(codeStyle.getAttributeNS(wordNamespace, 'type'), 'character');
+  assert.equal(
+    codeStyle.getElementsByTagNameNS(wordNamespace, 'rFonts')[0].getAttributeNS(wordNamespace, 'ascii'),
+    'Ubuntu Mono'
+  );
+  for (const text of ['const inline = true', 'const answer = 42;']) {
+    const run = [...document.getElementsByTagNameNS(wordNamespace, 'r')].find((node) => node.textContent === text);
+    assert.ok(run);
+    assert.equal(run.getElementsByTagNameNS(wordNamespace, 'rStyle')[0].getAttributeNS(wordNamespace, 'val'), 'Code');
+    assert.equal(run.getElementsByTagNameNS(wordNamespace, 'rFonts').length, 0);
+  }
+  const plainOutput = path.join(directory, 'plain.docx');
+  await createDocx({ input, output: plainOutput });
+  const plain = await JSZip.loadAsync(await readFile(plainOutput));
+  const plainDocument = readXml(await plain.file('word/document.xml').async('string'));
+  for (const text of ['const inline = true', 'const answer = 42;']) {
+    const run = [...plainDocument.getElementsByTagNameNS(wordNamespace, 'r')].find((node) => node.textContent === text);
+    assert.equal(run.getElementsByTagNameNS(wordNamespace, 'rFonts')[0].getAttributeNS(wordNamespace, 'ascii'), 'Consolas');
+  }
   assert.deepEqual(await readFile(template), originalBytes);
 });
 
