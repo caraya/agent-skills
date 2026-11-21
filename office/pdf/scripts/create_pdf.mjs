@@ -735,6 +735,14 @@ async function createPdf({ source, outputPath, pageSize, fontPath }) {
   pdf.setTitle(title);
   const fonts = await loadFonts(pdf, fontPath, StandardFonts);
   const parsedBlocks = parseMarkdown(parsedSource.content);
+  if (
+    parsedSource.title &&
+    !(parsedBlocks[0]?.type === 'heading' &&
+      parsedBlocks[0].level === 1 &&
+      parsedBlocks[0].text === parsedSource.title)
+  ) {
+    parsedBlocks.unshift({ type: 'heading', level: 1, text: parsedSource.title });
+  }
   const blocks = await prepareBlocks(pdf, parsedBlocks);
   if (blocks.length === 0) {
     throw new Error('The source contains no printable content.');

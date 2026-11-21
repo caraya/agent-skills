@@ -133,7 +133,7 @@ test('reports text that the standard fonts cannot encode', async () => {
   }
 });
 
-test('uses the YAML frontmatter title as the PDF title', async () => {
+test('uses the YAML frontmatter title as metadata and the first top-level heading', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'pdf-skill-title-test-'));
   const sourcePath = path.join(directory, 'source.md');
   const outputPath = path.join(directory, 'source.pdf');
@@ -152,6 +152,36 @@ test('uses the YAML frontmatter title as the PDF title', async () => {
     assert.equal(result.status, 0, result.stderr);
     const pdf = await PDFDocument.load(await readFile(outputPath));
     assert.equal(pdf.getTitle(), 'Quarterly Brief');
+    const content = getPageContent(pdf, pdf.getPages()[0]);
+    const textRuns = [...content.matchAll(/\/\S+ (\d+) Tf[\s\S]*?<([0-9A-Fa-f]+)> Tj/g)]
+      .map((match) => ({
+        size: Number(match[1]),
+        text: Buffer.from(match[2], 'hex').toString('utf8')
+      }));
+    assert.deepEqual(textRuns[0], { size: 24, text: 'Quarterly Brief' });
+    assert.equal(textRuns[1].text, 'Section heading');
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('does not duplicate an opening heading that matches the frontmatter title', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'pdf-skill-heading-test-'));
+  const outputPath = path.join(directory, 'document.pdf');
+
+  try {
+    const result = spawnSync(process.execPath, [scriptPath, '-', outputPath], {
+      cwd: skillDirectory,
+      encoding: 'utf8',
+      input: '---\ntitle: Quarterly Brief\n---\n\n# Quarterly Brief\n\nDocument content.'
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    const pdf = await PDFDocument.load(await readFile(outputPath));
+    const textRuns = [...getPageContent(pdf, pdf.getPages()[0])
+      .matchAll(/<([0-9A-Fa-f]+)> Tj/g)]
+      .map((match) => Buffer.from(match[1], 'hex').toString('utf8'));
+    assert.deepEqual(textRuns, ['Quarterly Brief', 'Document content.']);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
