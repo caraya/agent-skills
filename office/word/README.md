@@ -12,8 +12,13 @@ workspace; install its dependencies from the repository root:
 npm install
 ```
 
-For an installed copy outside this repository, run
-`npm ci --prefix /path/to/word` once instead.
+When invoking the skill, run
+`npm ci --prefix "/path/to/word" --workspaces=false` once if dependencies
+are missing. Replace the placeholder with the installed Word skill's
+absolute directory containing `SKILL.md`, `package.json`, and
+`package-lock.json`, not the caller's working directory or project root.
+Use this skill-local command even inside a monorepo; the repository-root
+installation above is for monorepo development only.
 
 After installation, document generation does not require network access.
 

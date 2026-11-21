@@ -12,13 +12,13 @@ Convert a Markdown document to a `.docx` file using the bundled Node.js CLI and 
 
 1. **Resolve the source.** Use the explicitly named Markdown source when provided. Otherwise, in Copilot, use the currently open Markdown document and read its full contents through the available editor or workspace context. If there is no active Markdown document or its contents are unavailable, ask the user to identify or provide the source. If the document is unsaved, ask the user to save it as a `.md` file first. Do not substitute the chat transcript or invent content.
 2. **Choose the output.** Save beside the source using the same base name and a `.docx` extension. Do not overwrite an existing file; ask for a different output path. Do not modify the source.
-3. **Install dependencies once.** The CLI resolves dependencies from this skill package, not the user's project. If dependencies are missing, locate the installed skill directory containing this `SKILL.md` and `package.json`, then run:
+3. **Install dependencies once.** The CLI resolves dependencies from this skill package, not the user's project. If dependencies are missing, locate the installed Word skill's actual directory containing this `SKILL.md`, `package.json`, and `package-lock.json`, then run:
 
    ```sh
-   npm ci --prefix /path/to/word
+   npm ci --prefix "/path/to/word" --workspaces=false
    ```
 
-   Do this once for the skill installation, not for each project. Before installing dependencies or running the CLI, check `node --version` and `npm --version`. If Node.js is missing or older than 22, or npm is missing, stop and tell the user to install Node.js 22+ and npm; do not attempt the conversion or fall back to another tool.
+   Replace the placeholder with that absolute skill directory, not the caller's working directory or project root. Do this once for the skill installation, not for each project. Use this command even when the skill is inside a monorepo; do not install from the repository root. Before installing dependencies or running the CLI, check `node --version` and `npm --version`. If Node.js is missing or older than 22, or npm is missing, stop and tell the user to install Node.js 22+ and npm; do not attempt the conversion or fall back to another tool.
 4. **Generate the document.**
 
    ```sh

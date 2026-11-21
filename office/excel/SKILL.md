@@ -31,11 +31,18 @@ Create an editable `.xlsx` workbook from tabular data using the bundled
    or merged cells), explain the proposed string conversion or omission and obtain the user's permission before proceeding. Report exactly what was
    converted or omitted.
 3. **Choose the output.** By default, the workbook is saved beside the JSON source with the same base name and an `.xlsx` extension. If the desired output exists, confirm before replacing that specific file, even if the user requested replacement. If they decline, ask for another path. Never overwrite a file that may be the original source. The output directory must already exist. If the output directory does not exist, do not create it silently; ask the user whether to create it or to choose an existing directory before running the CLI.
-4. **Install dependencies if needed.** If the skill directory is inside a
-   repository whose root `package.json` lists it in `workspaces`, run
-   `npm install` from that root. Otherwise, if the skill directory has its own
-   `package-lock.json` and no workspace parent, run
-   `npm ci --prefix /path/to/excel`.
+4. **Install dependencies if needed.** Resolve the installed Excel skill's
+   actual directory containing this `SKILL.md`, `package.json`, and
+   `package-lock.json`. Run:
+
+   ```sh
+   npm ci --prefix "/path/to/excel" --workspaces=false
+   ```
+
+   Replace the placeholder with that absolute skill directory, not the
+   caller's working directory or project root. Install once per skill
+   installation, not per source project. Use this command even when the
+   skill is inside a monorepo; do not install from the repository root.
    The manifest pins the `xlsx` package to the maintained SheetJS CDN release:
    the [npm registry release](https://www.npmjs.com/package/xlsx) is outdated,
    and [SheetJS recommends its CDN](https://docs.sheetjs.com/docs/getting-started/installation/nodejs/).

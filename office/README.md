@@ -42,4 +42,9 @@ npx skills add https://github.com/caraya/agent-skills/tree/main/office/excel
 Remove `--list` to select and install a skill. Replace `/path/to/agent-skills`
 with the path to your checkout when installing locally. An installed copy
 outside this repository needs its own dependencies; run
-`npm ci --prefix /path/to/installed/skill` once.
+`npm ci --prefix "/path/to/installed/skill" --workspaces=false` once.
+Replace the placeholder with the installed skill's absolute directory
+containing `SKILL.md`, `package.json`, and `package-lock.json`, not the
+project from which you invoke it. All four skill workflows use this
+skill-local installation command, even when installed inside a monorepo.
+The repository-root installation above is for monorepo development only.
