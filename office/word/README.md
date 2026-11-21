@@ -52,6 +52,10 @@ the output path; on failure, it prints an error and exits with a nonzero status.
 ## Conversion and limitations
 
 The CLI parses Markdown with `marked` and builds the document with `docx`.
+It excludes YAML frontmatter from the document body and uses a nonempty
+string `title` as the first Heading 1, without duplicating an identical
+opening Heading 1. Without a title, it adds no extra heading. Invalid YAML
+or a non-string title produces an error.
 It supports headings, paragraphs, bold, italic, strikethrough, inline code,
 HTTP(S) and email links, lists, block quotes, tables, horizontal rules, and
 code blocks. Fenced `mermaid` and `mmd` diagrams are rendered as PNG images

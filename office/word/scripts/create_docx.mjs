@@ -23,6 +23,7 @@ import {
 import { Resvg } from '@resvg/resvg-js';
 import { imageSize } from 'image-size';
 import { marked } from 'marked';
+import { parse as parseYaml } from 'yaml';
 
 const require = createRequire(import.meta.url);
 const headingLevels = [
@@ -140,7 +141,22 @@ async function inlineRuns(tokens, style = {}, sourceDirectory) {
   return runs;
 }
 
-async function markdownContent(markdown, sourceDirectory) {
+function parseSource(source) {
+  const frontmatter = /^(?:\uFEFF)?---[ \t]*\r?\n([\s\S]*?)\r?\n(?:---|\.\.\.)[ \t]*(?:\r?\n|$)/.exec(source);
+  if (!frontmatter) return { content: source, title: null };
+
+  const metadata = parseYaml(frontmatter[1]);
+  if (metadata !== null && (typeof metadata !== 'object' || Array.isArray(metadata))) {
+    throw new Error('YAML frontmatter must be a mapping.');
+  }
+  const title = metadata?.title ?? null;
+  if (title !== null && typeof title !== 'string') {
+    throw new Error('The YAML frontmatter title must be a string.');
+  }
+  return { content: source.slice(frontmatter[0].length), title };
+}
+
+async function markdownContent(markdown, sourceDirectory, title) {
   const paragraphs = [];
   const numberingConfig = [];
   let orderedListNumber = 0;
@@ -261,7 +277,18 @@ async function markdownContent(markdown, sourceDirectory) {
     }
   }
 
-  await appendTokens(marked.lexer(markdown));
+  const tokens = marked.lexer(markdown);
+  const firstToken = tokens.find((token) => token.type !== 'space');
+  if (
+    title &&
+    !(firstToken?.type === 'heading' && firstToken.depth === 1 && firstToken.text === title)
+  ) {
+    paragraphs.unshift(new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      children: [new TextRun({ text: title })]
+    }));
+  }
+  await appendTokens(tokens);
   return { paragraphs, numberingConfig };
 }
 
@@ -274,7 +301,8 @@ export async function createDocx({ input, output }) {
   }
   const outputPath = path.resolve(output ?? inputPath.replace(/\.md$/i, '.docx'));
   const markdown = await readFile(inputPath, 'utf8');
-  const { paragraphs, numberingConfig } = await markdownContent(markdown, path.dirname(inputPath));
+  const { content, title } = parseSource(markdown);
+  const { paragraphs, numberingConfig } = await markdownContent(content, path.dirname(inputPath), title);
   const document = new Document({
     numbering: { config: numberingConfig },
     sections: [{ children: paragraphs }]

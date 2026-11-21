@@ -55,6 +55,26 @@ test('creates a DOCX package with required XML parts and rendered Markdown', asy
   assert.match(document, /<w:t[^>]*>bold<\/w:t>/);
 });
 
+test('strips frontmatter and renders its title as the first Heading 1', async (t) => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'markdown-word-title-test-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const input = path.join(directory, 'report.md');
+  const output = path.join(directory, 'report.docx');
+  const source = '---\ntitle: "Quarterly Brief"\nauthor: Example Author\n---\n\n## Results\n\nDocument content.\n';
+  await writeFile(input, source);
+
+  await createDocx({ input, output });
+  const zip = await JSZip.loadAsync(await readFile(output));
+  const document = await zip.file('word/document.xml').async('string');
+  const paragraphs = document.match(/<w:p[ >][\s\S]*?<\/w:p>/g);
+  assert.match(paragraphs[0], /<w:pStyle w:val="Heading1"\/>/);
+  assert.match(paragraphs[0], /<w:t[^>]*>Quarterly Brief<\/w:t>/);
+  assert.match(paragraphs[1], /<w:t[^>]*>Results<\/w:t>/);
+  assert.match(document, /Document content\./);
+  assert.doesNotMatch(document, /title:|author:|Example Author|---/);
+  assert.equal(await readFile(input, 'utf8'), source);
+});
+
 test('renders Mermaid fences to PNG images embedded in the DOCX', async (t) => {
   const directory = await mkdtemp(path.join(tmpdir(), 'markdown-word-mermaid-test-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
@@ -77,6 +97,42 @@ test('renders Mermaid fences to PNG images embedded in the DOCX', async (t) => {
   assert.doesNotMatch(document, /graph TD|A\[Start\]/);
   const relationships = await zip.file('word/_rels/document.xml.rels').async('string');
   assert.match(relationships, /relationships\/image/);
+});
+
+test('preserves an existing opening heading without adding a duplicate', async (t) => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'markdown-word-heading-test-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  for (const [name, frontmatter] of [
+    ['matching', '---\ntitle: Report\n---\n\n'],
+    ['untitled', '---\nauthor: Example Author\n---\n\n'],
+    ['absent', '']
+  ]) {
+    const input = path.join(directory, `${name}.md`);
+    const output = path.join(directory, `${name}.docx`);
+    await writeFile(input, `${frontmatter}# Report\n\nBody.\n\n---\n`);
+    await createDocx({ input, output });
+    const zip = await JSZip.loadAsync(await readFile(output));
+    const document = await zip.file('word/document.xml').async('string');
+    assert.equal((document.match(/<w:t[^>]*>Report<\/w:t>/g) ?? []).length, 1);
+    assert.doesNotMatch(document, /author:|Example Author/);
+    assert.match(document, /<w:pBdr>/);
+  }
+});
+
+test('rejects invalid YAML and non-string frontmatter titles before writing output', async (t) => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'markdown-word-invalid-title-test-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const input = path.join(directory, 'report.md');
+  const output = path.join(directory, 'report.docx');
+  for (const [metadata, error] of [
+    ['title: [unclosed', /YAML|flow sequence/],
+    ['title: [Report]', /title must be a string/],
+    ['- Report', /frontmatter must be a mapping/]
+  ]) {
+    await writeFile(input, `---\n${metadata}\n---\n\nBody.\n`);
+    await assert.rejects(() => createDocx({ input, output }), error);
+    await assert.rejects(() => access(output), { code: 'ENOENT' });
+  }
 });
 
 test('preserves lists, block quotes, and tables as Word structures', async (t) => {

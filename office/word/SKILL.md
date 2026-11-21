@@ -30,6 +30,7 @@ Convert a Markdown document to a `.docx` file using the bundled Node.js CLI and 
 
 ## Markdown support
 
+- YAML frontmatter is excluded from the document body. A nonempty string `title` becomes the first Heading 1, without duplicating an identical opening Heading 1. Without a title, no extra heading is added. Invalid YAML or a non-string title produces an error.
 - Headings, paragraphs, bold, italic, strikethrough, inline code, HTTP(S) and email links, lists, block quotes, tables, and horizontal rules are converted to Word structures.
 - Fenced code is preserved in a monospace font. `mermaid` and `mmd` fences are rendered as PNG images and embedded in the DOCX.
 - Local PNG and JPEG Markdown images are embedded with their alt text. Remote images are rejected; download them only if the user explicitly requests it and approves the source.
