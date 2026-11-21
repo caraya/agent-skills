@@ -4,6 +4,7 @@
   "workspaces": [
     "coding",
     "instructional-design",
+    "office/excel",
     "office/pdf",
     "office/word",
     "office/powerpoint"

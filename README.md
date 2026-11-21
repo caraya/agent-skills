@@ -2,9 +2,9 @@
 
 This repository uses npm workspaces for the `coding` and `instructional-design`
 packages and for the experimental [PDF](office/pdf/SKILL.md),
-[Word](office/word/SKILL.md), and [PowerPoint](office/powerpoint/SKILL.md)
-skills in `office/`. The `rw-mcp` Go module and the frontend template are
-independent.
+[Word](office/word/SKILL.md), [PowerPoint](office/powerpoint/SKILL.md), and
+[Excel](office/excel/SKILL.md) skills in `office/`. The `rw-mcp` Go module
+and the frontend template are independent.
 
 Install workspace dependencies from the root:
 
@@ -17,7 +17,7 @@ for example `--workspace=coding` or `--workspace=office/pdf`. Use
 `--workspaces` to run a script in every workspace. To test the office skills:
 
 ```sh
-npm test --workspace=office/pdf --workspace=office/word --workspace=office/powerpoint
+npm test --workspace=office/pdf --workspace=office/word --workspace=office/powerpoint --workspace=office/excel
 ```
 
 The root `package-lock.json` records the monorepo installation; the existing
@@ -37,6 +37,7 @@ npx skills add /path/to/agent-skills/instructional-design/skills --list
 npx skills add /path/to/agent-skills/office/pdf --list
 npx skills add /path/to/agent-skills/office/word --list
 npx skills add /path/to/agent-skills/office/powerpoint --list
+npx skills add /path/to/agent-skills/office/excel --list
 ```
 
 Replace `/path/to/agent-skills` with the path to your checkout. Remove `--list`
@@ -51,6 +52,7 @@ npx skills add https://github.com/caraya/agent-skills/tree/main/instructional-de
 npx skills add https://github.com/caraya/agent-skills/tree/main/office/pdf
 npx skills add https://github.com/caraya/agent-skills/tree/main/office/word
 npx skills add https://github.com/caraya/agent-skills/tree/main/office/powerpoint
+npx skills add https://github.com/caraya/agent-skills/tree/main/office/excel
 ```
 
 Some skill names occur in both packages. When discovering both packages together,

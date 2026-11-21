@@ -2,7 +2,8 @@
 
 > These skills are HIGHLY EXPERIMENTAL and may change frequently.
 
-These skills create PDF, Word and PowerPoint documents from Markdown.
+These skills create PDF, Word, and PowerPoint documents from Markdown, and
+Excel workbooks from JSON.
 Each skill is an npm workspace in the monorepo. Run `npm install` from the
 repository root to install dependencies for all workspaces, then run a
 skill's tests with `npm test --workspace=office/<skill>`.
@@ -16,6 +17,7 @@ a skill's `package.json` must also be added to the root `package.json`.
 - [PDF](pdf/SKILL.md) converts Markdown to PDF.
 - [Word](word/SKILL.md) converts Markdown to Word `.docx`.
 - [PowerPoint](powerpoint/SKILL.md) converts Markdown to PowerPoint `.pptx`.
+- [Excel](excel/SKILL.md) converts tabular JSON to Excel `.xlsx`.
 
 ## Install skills
 
@@ -25,6 +27,7 @@ From the project where you want to use a skill, list a local package with:
 npx skills add /path/to/agent-skills/office/pdf --list
 npx skills add /path/to/agent-skills/office/word --list
 npx skills add /path/to/agent-skills/office/powerpoint --list
+npx skills add /path/to/agent-skills/office/excel --list
 ```
 
 Or install from GitHub:
@@ -33,6 +36,7 @@ Or install from GitHub:
 npx skills add https://github.com/caraya/agent-skills/tree/main/office/pdf
 npx skills add https://github.com/caraya/agent-skills/tree/main/office/word
 npx skills add https://github.com/caraya/agent-skills/tree/main/office/powerpoint
+npx skills add https://github.com/caraya/agent-skills/tree/main/office/excel
 ```
 
 Remove `--list` to select and install a skill. Replace `/path/to/agent-skills`

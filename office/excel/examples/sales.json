@@ -1,0 +1,19 @@
+{
+  "sheets": [
+    {
+      "name": "Sales",
+      "rows": [
+        ["Item", "Quantity", "Available"],
+        ["Widget", 42, true],
+        ["Gadget", 0, false]
+      ]
+    },
+    {
+      "name": "Notes",
+      "rows": [
+        ["Reference", "003"],
+        ["Comment", null]
+      ]
+    }
+  ]
+}
