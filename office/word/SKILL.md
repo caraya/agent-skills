@@ -33,7 +33,7 @@ Convert a Markdown document to a `.docx` file using the bundled Node.js CLI and 
 
 - YAML frontmatter is excluded from the document body. A nonempty string `title` becomes the first Heading 1, without duplicating an identical opening Heading 1. Without a title, no extra heading is added. Invalid YAML or a non-string title produces an error.
 - Headings, paragraphs, bold, italic, strikethrough, inline code, HTTP(S) and email links, lists, block quotes, tables, and horizontal rules are converted to Word structures.
-- Inline and fenced code use the template's `Code` character style when present; otherwise they use Consolas. The bundled starter template uses embedded Ubuntu Mono for that style. Fenced code is not syntax-highlighted with Prism. `mermaid` and `mmd` fences are rendered as PNG images and embedded in the DOCX.
+- All inline and fenced code explicitly uses Ubuntu Mono in every document, retaining other formatting from the template's `Code` character style when present. The starter template embeds Ubuntu Mono; documents without an embedded copy require it on the viewing computer. Fenced code is not syntax-highlighted with Prism. `mermaid` and `mmd` fences are rendered as PNG images and embedded in the DOCX.
 - Local PNG and JPEG Markdown images are embedded with their alt text. Remote images are rejected; download them only if the user explicitly requests it and approves the source.
 - Unsupported Markdown constructs and non-PNG/JPEG images produce an error. Do not remove content to make conversion succeed without the user's approval. If the user approves removing or replacing content, write a modified copy of the Markdown to a temporary file, convert that copy with the chosen output path, and leave the original source untouched. Adjust image paths in the copy so existing local images still resolve relative to the original source and approved downloaded images resolve to their local files. Tell the user which changes were made in the copy.
 
@@ -43,7 +43,7 @@ The bundled [starter template](templates/starter.docx) uses Google Sans with a 1
 
 The CLI replaces the marker paragraph with the converted Markdown. The frontmatter title remains the first inserted Heading 1, without duplicating a matching opening Heading 1. It preserves the template's surrounding content, sections, margins, headers, footers, page-number fields, and embedded fonts. Content insertion can change pagination; check the result in a Word-compatible viewer.
 
-Generated paragraphs use the template's default paragraph style. Headings reuse its `Heading1` through `Heading6` style IDs; missing heading styles receive defaults. Inline and fenced code reuse its `Code` character style when defined. Inline emphasis and explicit table formatting are retained. Images, links, and list numbering are added without replacing existing template resources.
+Generated paragraphs use the template's default paragraph style. Headings reuse its `Heading1` through `Heading6` style IDs; missing heading styles receive defaults. Inline and fenced code reuse its `Code` character style when defined, but always override the font with Ubuntu Mono. Inline emphasis and explicit table formatting are retained. Images, links, and list numbering are added without replacing existing template resources.
 
 Only `.docx` templates with this single text insertion marker are supported. `.dotx`, macro-enabled templates, multiple insertion regions, bookmark or content-control insertion, and other placeholder substitutions are not supported.
 

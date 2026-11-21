@@ -74,11 +74,12 @@ Ubuntu Mono comes from the supplied fonts in the same directory, under the
 [Ubuntu Font Licence 1.0](templates/UbuntuMono-LICENSE.txt). Its font files are
 embedded unchanged, and the license is included inside the DOCX package.
 
-The template's `Code` character style selects Ubuntu Mono. The converter uses
-that style for inline and fenced code whenever a template defines it.
-Documents without a template, or using a template without that character
-style, retain the existing Consolas code font. The Word converter does not
-use Prism or syntax-highlight fenced code.
+The converter explicitly sets Ubuntu Mono for all inline and fenced code in
+every document, including those without a template. If a template defines
+a `Code` character style, code retains its other formatting but overrides
+its font. Use the starter template to include the embedded Ubuntu Mono fonts;
+without an embedded copy, the viewing computer needs Ubuntu Mono installed.
+The Word converter does not use Prism or syntax-highlight fenced code.
 
 From the skill directory, use it with:
 

@@ -104,7 +104,11 @@ test('starter template embeds body and code fonts and retains them in generated 
     const run = [...document.getElementsByTagNameNS(wordNamespace, 'r')].find((node) => node.textContent === text);
     assert.ok(run);
     assert.equal(run.getElementsByTagNameNS(wordNamespace, 'rStyle')[0].getAttributeNS(wordNamespace, 'val'), 'Code');
-    assert.equal(run.getElementsByTagNameNS(wordNamespace, 'rFonts').length, 0);
+    assert.deepEqual(
+      [...run.getElementsByTagNameNS(wordNamespace, 'rFonts')]
+        .map((font) => font.getAttributeNS(wordNamespace, 'ascii')),
+      ['Ubuntu Mono']
+    );
   }
   const plainOutput = path.join(directory, 'plain.docx');
   await createDocx({ input, output: plainOutput });
@@ -112,9 +116,37 @@ test('starter template embeds body and code fonts and retains them in generated 
   const plainDocument = readXml(await plain.file('word/document.xml').async('string'));
   for (const text of ['const inline = true', 'const answer = 42;']) {
     const run = [...plainDocument.getElementsByTagNameNS(wordNamespace, 'r')].find((node) => node.textContent === text);
-    assert.equal(run.getElementsByTagNameNS(wordNamespace, 'rFonts')[0].getAttributeNS(wordNamespace, 'ascii'), 'Consolas');
+    assert.equal(run.getElementsByTagNameNS(wordNamespace, 'rFonts')[0].getAttributeNS(wordNamespace, 'ascii'), 'Ubuntu Mono');
   }
   assert.deepEqual(await readFile(template), originalBytes);
+});
+
+test('inline and fenced code explicitly use Ubuntu Mono even with a different template Code font', async (t) => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'markdown-word-code-font-test-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const input = path.join(directory, 'code.md');
+  const output = path.join(directory, 'code.docx');
+  const template = path.join(directory, 'template.docx');
+  await writeFile(input, '`const inline = true`\n\n```js\nconst answer = 42;\n```\n');
+  await writeFile(template, await Packer.toBuffer(new Document({
+    styles: { characterStyles: [{ id: 'Code', name: 'Code', run: { font: 'Courier New' } }] },
+    sections: [{ children: [new Paragraph('{{content}}')] }]
+  })));
+  await createDocx({ input, output, template });
+  const zip = await JSZip.loadAsync(await readFile(output));
+  const document = readXml(await zip.file('word/document.xml').async('string'));
+  const runs = [...document.getElementsByTagNameNS(wordNamespace, 'r')];
+  assert.deepEqual(runs.map((run) => run.textContent), ['const inline = true', 'const answer = 42;']);
+  for (const run of runs) {
+    const fonts = run.getElementsByTagNameNS(wordNamespace, 'rFonts');
+    assert.equal(fonts.length, 1);
+    assert.equal(fonts[0].getAttributeNS(wordNamespace, 'ascii'), 'Ubuntu Mono');
+    assert.equal(run.getElementsByTagNameNS(wordNamespace, 'rStyle')[0].getAttributeNS(wordNamespace, 'val'), 'Code');
+  }
+  const styles = readXml(await zip.file('word/styles.xml').async('string'));
+  const codeStyle = [...styles.getElementsByTagNameNS(wordNamespace, 'style')]
+    .find((style) => style.getAttributeNS(wordNamespace, 'styleId') === 'Code');
+  assert.equal(codeStyle.getElementsByTagNameNS(wordNamespace, 'rFonts')[0].getAttributeNS(wordNamespace, 'ascii'), 'Courier New');
 });
 
 test('inserts Markdown into a template with its title first and preserves fixed content and styles', async (t) => {

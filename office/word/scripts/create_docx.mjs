@@ -32,6 +32,7 @@ import { JSDOM } from 'jsdom';
 const require = createRequire(import.meta.url);
 const WORD_NAMESPACE = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const CONTENT_MARKER = '{{content}}';
+const CODE_FONT = 'Ubuntu Mono';
 const headingLevels = [
   HeadingLevel.HEADING_1,
   HeadingLevel.HEADING_2,
@@ -124,7 +125,7 @@ async function inlineRuns(tokens, style = {}, sourceDirectory, codeStyle) {
       runs.push(...await inlineRuns(token.tokens, { ...style, strike: true }, sourceDirectory, codeStyle));
     } else if (token.type === 'codespan') {
       runs.push(new TextRun({
-        text: token.text, ...style, ...(codeStyle ? { style: codeStyle } : { font: 'Consolas' })
+        text: token.text, ...style, font: CODE_FONT, ...(codeStyle ? { style: codeStyle } : {})
       }));
     } else if (token.type === 'br') {
       runs.push(new TextRun({ text: '\n', ...style }));
@@ -275,7 +276,7 @@ async function markdownContent(markdown, sourceDirectory, title, codeStyle) {
         for (const line of token.text.split('\n')) {
           paragraphs.push(new Paragraph({
             children: [new TextRun({
-              text: line, ...(codeStyle ? { style: codeStyle } : { font: 'Consolas' })
+              text: line, font: CODE_FONT, ...(codeStyle ? { style: codeStyle } : {})
             })],
             indent: { left: 360 },
             spacing: { after: 0 }
