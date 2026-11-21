@@ -13,6 +13,8 @@ import {
   ImageRun,
   LevelFormat,
   Packer,
+  patchDocument,
+  PatchType,
   Paragraph,
   Table,
   TableCell,
@@ -24,8 +26,12 @@ import { Resvg } from '@resvg/resvg-js';
 import { imageSize } from 'image-size';
 import { marked } from 'marked';
 import { parse as parseYaml } from 'yaml';
+import JSZip from 'jszip';
+import { JSDOM } from 'jsdom';
 
 const require = createRequire(import.meta.url);
+const WORD_NAMESPACE = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+const CONTENT_MARKER = '{{content}}';
 const headingLevels = [
   HeadingLevel.HEADING_1,
   HeadingLevel.HEADING_2,
@@ -292,7 +298,77 @@ async function markdownContent(markdown, sourceDirectory, title) {
   return { paragraphs, numberingConfig };
 }
 
-export async function createDocx({ input, output }) {
+async function readTemplate(templatePath) {
+  if (path.extname(templatePath).toLowerCase() !== '.docx') {
+    throw new Error('The template must be a .docx file; .dotx templates are not supported.');
+  }
+  const bytes = await readFile(templatePath);
+  const zip = await JSZip.loadAsync(bytes);
+  if (!zip.file('word/document.xml') || !zip.file('[Content_Types].xml')) {
+    throw new Error('The template must be a valid DOCX package with a main document part.');
+  }
+  const typesDom = new JSDOM(await zip.file('[Content_Types].xml').async('string'), {
+    contentType: 'application/xml'
+  });
+  try {
+    const documentType = [...typesDom.window.document.getElementsByTagNameNS(
+      'http://schemas.openxmlformats.org/package/2006/content-types', 'Override'
+    )].find((entry) => entry.getAttribute('PartName') === '/word/document.xml');
+    if (documentType?.getAttribute('ContentType') !==
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml') {
+      throw new Error('The template must use the DOCX document content type, not DOTX or macro-enabled formats.');
+    }
+  } finally {
+    typesDom.window.close();
+  }
+
+  let markerCount = 0;
+  let validMarker = false;
+  for (const part of zip.file(/^word\/.*\.xml$/)) {
+    const dom = new JSDOM(await part.async('string'), { contentType: 'application/xml' });
+    try {
+      if (part.name === 'word/document.xml' &&
+        dom.window.document.documentElement.tagName !== 'w:document') {
+        throw new Error('The template main document must use the standard w:document namespace prefix.');
+      }
+      for (const paragraph of dom.window.document.getElementsByTagNameNS(WORD_NAMESPACE, 'p')) {
+        const text = [...paragraph.getElementsByTagNameNS(WORD_NAMESPACE, 't')]
+          .map((node) => node.textContent).join('');
+        const occurrences = text.split(CONTENT_MARKER).length - 1;
+        markerCount += occurrences;
+        if (occurrences === 0) continue;
+
+        const onlyTextRuns = [...paragraph.children].every((child) =>
+          child.namespaceURI === WORD_NAMESPACE &&
+          (child.tagName === 'w:pPr' || (child.tagName === 'w:r' &&
+            [...child.children].every((runChild) =>
+              runChild.namespaceURI === WORD_NAMESPACE &&
+              ['w:rPr', 'w:t'].includes(runChild.tagName)
+            )))
+        );
+        validMarker =
+          part.name === 'word/document.xml' &&
+          paragraph.tagName === 'w:p' &&
+          paragraph.parentElement?.namespaceURI === WORD_NAMESPACE &&
+          paragraph.parentElement.tagName === 'w:body' &&
+          text.trim() === CONTENT_MARKER &&
+          onlyTextRuns &&
+          paragraph.getElementsByTagNameNS(WORD_NAMESPACE, 'sectPr').length === 0;
+      }
+    } finally {
+      dom.window.close();
+    }
+  }
+  if (markerCount !== 1 || !validMarker) {
+    throw new Error(
+      'The template must contain exactly one standalone {{content}} paragraph in the main document body, ' +
+      'with plain text runs only and no section break, fields, images, or other content in that paragraph.'
+    );
+  }
+  return bytes;
+}
+
+export async function createDocx({ input, output, template }) {
   if (!input) throw new Error('A Markdown source path is required.');
 
   const inputPath = path.resolve(input);
@@ -300,31 +376,54 @@ export async function createDocx({ input, output }) {
     throw new Error('The source file must have a .md extension.');
   }
   const outputPath = path.resolve(output ?? inputPath.replace(/\.md$/i, '.docx'));
+  const templateBytes = template ? await readTemplate(path.resolve(template)) : null;
   const markdown = await readFile(inputPath, 'utf8');
   const { content, title } = parseSource(markdown);
   const { paragraphs, numberingConfig } = await markdownContent(content, path.dirname(inputPath), title);
-  const document = new Document({
-    numbering: { config: numberingConfig },
-    sections: [{ children: paragraphs }]
-  });
-  const buffer = await Packer.toBuffer(document);
+  const buffer = templateBytes
+    ? await patchDocument({
+      outputType: 'nodebuffer',
+      data: templateBytes,
+      patches: { content: { type: PatchType.DOCUMENT, children: paragraphs } },
+      numbering: { config: numberingConfig }
+    })
+    : await Packer.toBuffer(new Document({
+      numbering: { config: numberingConfig },
+      sections: [{ children: paragraphs }]
+    }));
   await writeFile(outputPath, buffer, { flag: 'wx' });
   return outputPath;
 }
 
 async function main(args) {
+  const usage = 'Usage: node create_docx.mjs <source.md> [output.docx] [--template template.docx]';
   if (args.includes('--help') || args.includes('-h')) {
     process.stdout.write(
-      'Usage: node create_docx.mjs <source.md> [output.docx]\n\n' +
-      'The output defaults to the source file path with a .docx extension.\n'
+      `${usage}\n\n` +
+      'The output defaults to the source file path with a .docx extension.\n' +
+      'The template must contain exactly one standalone {{content}} paragraph in its main body.\n'
     );
     return;
   }
-  const [input, output] = args;
-  if (!input || input.startsWith('-')) {
-    throw new Error('Usage: node create_docx.mjs <source.md> [output.docx]');
+  const positional = [];
+  let template;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === '--template') {
+      if (template) throw new Error('Specify --template only once.');
+      template = args[++index];
+      if (!template || template.startsWith('-')) {
+        throw new Error('--template requires a DOCX file path.');
+      }
+    } else if (argument.startsWith('-')) {
+      throw new Error(`Unknown option: ${argument}\n${usage}`);
+    } else {
+      positional.push(argument);
+    }
   }
-  const outputPath = await createDocx({ input, output });
+  if (positional.length < 1 || positional.length > 2) throw new Error(usage);
+  const [input, output] = positional;
+  const outputPath = await createDocx({ input, output, template });
   process.stdout.write(`Created ${outputPath}\n`);
 }
 

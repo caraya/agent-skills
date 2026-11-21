@@ -54,6 +54,65 @@ resolved relative to the current working directory. The source must have a
 Run `node scripts/create_docx.mjs --help` for usage. On success, the CLI prints
 the output path; on failure, it prints an error and exits with a nonzero status.
 
+## Document templates
+
+The bundled [starter template](templates/starter.docx) provides a minimal
+Letter-size report layout with 1-inch margins, Google Sans at 12 pt for body
+text, headings at 20, 16, 14, 13, 12, and 12 pt, and a centered 10 pt
+"Page X of Y" footer. Its regular, bold, italic, and bold-italic Google Sans
+faces are embedded in full, not subsetted. A viewer that supports Word font
+embedding can use them without a local Google Sans installation.
+
+The embedded static faces were derived from the supplied variable fonts in
+[the sibling fonts directory](../fonts/) at weights 400 and 700, with optical
+size 18 and grade 0. The originals are unchanged and licensed under the
+[SIL Open Font License](../fonts/OFL.txt). The template is self-contained;
+its source font files are not needed when generating a document from it.
+Template conversion preserves the embedded font files and their relationships.
+
+From the skill directory, use it with:
+
+```sh
+node scripts/create_docx.mjs source.md output.docx --template templates/starter.docx
+```
+
+To use existing letterhead or a report layout:
+
+1. Create a `.docx` document in Word or another compatible editor.
+2. Put `{{content}}` in its own paragraph where the generated content belongs.
+   Place that paragraph directly in the main document body, not in a table,
+   header, footer, bookmark, or content control. Include no other content,
+   fields, images, or section break in that paragraph.
+3. Save the template and run:
+
+   ```sh
+   node scripts/create_docx.mjs source.md output.docx --template "company template.docx"
+   ```
+
+Replace the paths with your files. Relative paths resolve from the caller's
+working directory. There must be exactly one `{{content}}` marker across
+the template's paragraph text. The marker can span multiple plain text runs,
+as often happens when editing in Word. Missing, repeated, or misplaced
+markers cause an error; the converter does not fall back to a blank document.
+
+The generated Markdown replaces only the marker paragraph. Its frontmatter
+title becomes the first inserted Heading 1, without duplicating a matching
+opening Heading 1; frontmatter itself is not rendered. Surrounding content,
+sections, margins, headers, footers, and page-number fields are preserved.
+Neither the source nor the template is modified, and existing output files
+are never overwritten.
+
+Body paragraphs use the template's default paragraph style. Headings reuse
+the template's `Heading1` through `Heading6` style IDs, with defaults added
+for missing heading styles. Inline emphasis, monospace code, and explicit
+table formatting remain. Generated images, links, and list numbering are
+merged with the template's resources without identifier collisions.
+
+This initial support does not accept `.dotx` or macro-enabled templates,
+multiple insertion regions, bookmark or content-control insertion, or other
+placeholder substitutions. Pagination can change when content is inserted.
+Inspect important documents in a Word-compatible viewer.
+
 ## Conversion and limitations
 
 The CLI parses Markdown with `marked` and builds the document with `docx`.
